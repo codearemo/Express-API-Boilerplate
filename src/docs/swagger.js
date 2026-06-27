@@ -36,6 +36,18 @@ const options = {
           type: 'object',
           properties: {
             status: { type: 'string', example: 'OK' },
+            database: { type: 'string', example: 'connected' },
+          },
+        },
+        HealthErrorResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'ERROR' },
+            database: {
+              type: 'string',
+              enum: ['disconnected', 'unavailable', 'unsupported'],
+              example: 'disconnected',
+            },
           },
         },
         User: {

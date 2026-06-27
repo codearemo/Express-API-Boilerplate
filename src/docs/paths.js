@@ -12,14 +12,22 @@
  *   get:
  *     tags: [Health]
  *     summary: Health check
- *     description: Returns OK when the server is running.
+ *     description: |
+ *       Returns OK when the server and MongoDB are reachable.
+ *       Load balancers should treat **503** as unhealthy.
  *     responses:
  *       200:
- *         description: Server is healthy
+ *         description: Server and database are healthy
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/HealthResponse'
+ *       503:
+ *         description: Database unavailable
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthErrorResponse'
  */
 
 /**
@@ -59,6 +67,12 @@
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       413:
+ *         description: JSON body exceeds JSON_BODY_LIMIT
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
  */
 
 /**
@@ -91,6 +105,12 @@
  *               $ref: '#/components/schemas/ApiErrorResponse'
  *       429:
  *         description: Too many login attempts from this IP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       413:
+ *         description: JSON body exceeds JSON_BODY_LIMIT
  *         content:
  *           application/json:
  *             schema:
@@ -132,6 +152,12 @@
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       413:
+ *         description: JSON body exceeds JSON_BODY_LIMIT
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
  */
 
 /**
@@ -164,6 +190,12 @@
  *               $ref: '#/components/schemas/ApiErrorResponse'
  *       429:
  *         description: Too many reset attempts from this IP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       413:
+ *         description: JSON body exceeds JSON_BODY_LIMIT
  *         content:
  *           application/json:
  *             schema:

@@ -27,6 +27,28 @@
           "status": {
             "type": "string",
             "example": "OK"
+          },
+          "database": {
+            "type": "string",
+            "example": "connected"
+          }
+        }
+      },
+      "HealthErrorResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ERROR"
+          },
+          "database": {
+            "type": "string",
+            "enum": [
+              "disconnected",
+              "unavailable",
+              "unsupported"
+            ],
+            "example": "disconnected"
           }
         }
       },
@@ -290,14 +312,24 @@
           "Health"
         ],
         "summary": "Health check",
-        "description": "Returns OK when the server is running.",
+        "description": "Returns OK when the server and MongoDB are reachable.\nLoad balancers should treat **503** as unhealthy.\n",
         "responses": {
           "200": {
-            "description": "Server is healthy",
+            "description": "Server and database are healthy",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthErrorResponse"
                 }
               }
             }
@@ -344,6 +376,16 @@
           },
           "409": {
             "description": "Email or username already in use",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON body exceeds JSON_BODY_LIMIT",
             "content": {
               "application/json": {
                 "schema": {
@@ -403,6 +445,16 @@
               }
             }
           },
+          "413": {
+            "description": "JSON body exceeds JSON_BODY_LIMIT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Too many login attempts from this IP",
             "content": {
@@ -454,6 +506,16 @@
               }
             }
           },
+          "413": {
+            "description": "JSON body exceeds JSON_BODY_LIMIT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Too many password reset requests from this IP",
             "content": {
@@ -497,6 +559,16 @@
           },
           "400": {
             "description": "Validation failed or invalid/expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON body exceeds JSON_BODY_LIMIT",
             "content": {
               "application/json": {
                 "schema": {

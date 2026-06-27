@@ -19,6 +19,7 @@ const {
 } = require('./middleware/security.middleware');
 const swaggerUi = require('swagger-ui-express');
 const { getSwaggerSpec } = require('./docs/swagger');
+const { checkDatabaseHealth } = require('./utils/health');
 
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
@@ -42,9 +43,19 @@ app.get('/api-docs.json', (_req, res) => {
 // API v1 (e.g. POST /api/v1/auth/register)
 app.use('/api/v1', v1Routes);
 
-// Health check endpoint to check if the server is running
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK' });
+// Health check — verifies MongoDB is reachable (503 if not)
+app.get('/health', async (_req, res) => {
+  try {
+    const { ok, database } = await checkDatabaseHealth();
+
+    if (!ok) {
+      return res.status(503).json({ status: 'ERROR', database });
+    }
+
+    res.status(200).json({ status: 'OK', database });
+  } catch {
+    res.status(503).json({ status: 'ERROR', database: 'unavailable' });
+  }
 });
 
 // Global error handler — must be registered after all routes

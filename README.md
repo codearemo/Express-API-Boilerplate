@@ -94,7 +94,13 @@ npm install
 
 ### Environment variables
 
-Create a `.env` file in the project root:
+Copy the example file and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+Or create a `.env` file manually:
 
 ```env
 PORT=3003
@@ -201,7 +207,7 @@ Interactive docs: [http://localhost:3003/api-docs](http://localhost:3003/api-doc
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET` | `/health` | No | Health check |
+| `GET` | `/health` | No | Health check (includes MongoDB ping; **503** if DB unavailable) |
 | `POST` | `/api/v1/auth/register` | No | Create a new user |
 | `POST` | `/api/v1/auth/login` | No | Login, returns JWT |
 | `POST` | `/api/v1/auth/forgot-password` | No | Email a password reset link |
@@ -340,7 +346,10 @@ All `/api/v1` responses use a uniform envelope.
 | `401` | Missing or invalid JWT (protected routes) |
 | `404` | Resource not found |
 | `409` | Conflict (duplicate email/username) |
+| `413` | Request body too large (exceeds `JSON_BODY_LIMIT`) |
+| `429` | Too many requests (rate limit exceeded) |
 | `500` | Internal server error |
+| `503` | Service unavailable (e.g. database down on `/health`) |
 
 ---
 

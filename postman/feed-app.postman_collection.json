@@ -1,12 +1,12 @@
 {
   "item": [
     {
-      "id": "953c9513-4673-40d7-8a7b-6d6f32dd5370",
+      "id": "888cc1e8-bfe0-4aa9-b39c-3dddcf54d234",
       "name": "Health check",
       "request": {
         "name": "Health check",
         "description": {
-          "content": "Returns OK when the server is running.",
+          "content": "Returns OK when the server and MongoDB are reachable.\nLoad balancers should treat **503** as unhealthy.\n",
           "type": "text/plain"
         },
         "url": {
@@ -30,8 +30,8 @@
       },
       "response": [
         {
-          "id": "b136168a-4d6c-4a53-92d6-8e789fa635b7",
-          "name": "Server is healthy",
+          "id": "a45b6f4e-00f0-43f7-b1bb-a0eee2f2e2e4",
+          "name": "Server and database are healthy",
           "originalRequest": {
             "url": {
               "path": [
@@ -60,7 +60,42 @@
               "value": "application/json"
             }
           ],
-          "body": "{\n  \"status\": \"OK\"\n}",
+          "body": "{\n  \"status\": \"OK\",\n  \"database\": \"connected\"\n}",
+          "cookie": [],
+          "_postman_previewlanguage": "json"
+        },
+        {
+          "id": "73807965-50b1-4c31-8402-70f888e35eb9",
+          "name": "Database unavailable",
+          "originalRequest": {
+            "url": {
+              "path": [
+                "health"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {}
+          },
+          "status": "Service Unavailable",
+          "code": 503,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ERROR\",\n  \"database\": \"disconnected\"\n}",
           "cookie": [],
           "_postman_previewlanguage": "json"
         }
@@ -71,15 +106,15 @@
       }
     },
     {
-      "id": "28cafcb6-200e-40e0-8762-959d13e28609",
+      "id": "76422512-3c50-41c4-a2df-681f1c61bbd8",
       "name": "api/v1",
       "item": [
         {
-          "id": "91ab6695-09bf-4d5e-add6-49a9684e212a",
+          "id": "6c824fe7-0c7e-49f8-a505-05b8320265f2",
           "name": "auth",
           "item": [
             {
-              "id": "47f8ebf4-3e89-4d97-b5b9-981b68fa76e1",
+              "id": "710ab10b-894e-42ee-b755-066b4b41d5c2",
               "name": "Register a new user",
               "request": {
                 "name": "Register a new user",
@@ -121,7 +156,7 @@
               },
               "response": [
                 {
-                  "id": "106b69fc-1f72-49ac-9e29-84e380b2c4d5",
+                  "id": "510216f8-c62a-42f4-9766-271b1d48c4b7",
                   "name": "User created",
                   "originalRequest": {
                     "url": {
@@ -162,12 +197,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"2023-12-17T04:23:55.827Z\",\n    \"updatedAt\": \"1950-06-29T04:04:42.318Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
+                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"1955-08-09T06:30:47.680Z\",\n    \"updatedAt\": \"1993-12-02T14:19:30.297Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "d80327d6-8299-483e-9438-c22d0ebefa33",
+                  "id": "e5810e22-8e56-4e79-a069-1118d19d1f39",
                   "name": "Validation failed",
                   "originalRequest": {
                     "url": {
@@ -213,7 +248,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f74357d9-2348-44d8-9c12-b9a96c3467d4",
+                  "id": "3dfdb3cc-4652-4589-af50-3c06be695fd7",
                   "name": "Email or username already in use",
                   "originalRequest": {
                     "url": {
@@ -259,7 +294,53 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "3e9fab9b-eb9c-4e2e-8193-7861aac211e8",
+                  "id": "95c5f840-d9a1-4122-94c9-a696abf1b841",
+                  "name": "JSON body exceeds JSON_BODY_LIMIT",
+                  "originalRequest": {
+                    "url": {
+                      "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "register"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "POST",
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"username\": \"jane\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"Password123!\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Request Entity Too Large",
+                  "code": 413,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": null,\n  \"message\": \"Invalid credentials\",\n  \"details\": [\n    {\n      \"field\": \"email\",\n      \"message\": \"Invalid email address\"\n    },\n    {\n      \"field\": \"email\",\n      \"message\": \"Invalid email address\"\n    }\n  ]\n}",
+                  "cookie": [],
+                  "_postman_previewlanguage": "json"
+                },
+                {
+                  "id": "171173f1-6486-4262-a24c-e82c468ad394",
                   "name": "Too many registration attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -311,7 +392,7 @@
               }
             },
             {
-              "id": "32402fe9-8bc3-4133-80a6-4edd68f55b85",
+              "id": "52775bdb-19b6-444c-8558-c15954b03347",
               "name": "Log in with email or username",
               "request": {
                 "name": "Log in with email or username",
@@ -356,7 +437,7 @@
               },
               "response": [
                 {
-                  "id": "c9259836-cfbc-401a-9b4b-520784554c93",
+                  "id": "0b589dab-27e3-4824-9bf2-19e94367b9b8",
                   "name": "Login successful",
                   "originalRequest": {
                     "url": {
@@ -397,12 +478,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"data\": {\n    \"user\": {\n      \"_id\": \"664a1b2c3d4e5f678901234\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"username\": \"jane\",\n      \"email\": \"jane@example.com\",\n      \"bio\": \"string\",\n      \"status\": \"active\",\n      \"createdAt\": \"1961-03-11T13:52:12.542Z\",\n      \"updatedAt\": \"1964-08-23T21:57:24.695Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  },\n  \"message\": \"Login successful\"\n}",
+                  "body": "{\n  \"data\": {\n    \"user\": {\n      \"_id\": \"664a1b2c3d4e5f678901234\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"username\": \"jane\",\n      \"email\": \"jane@example.com\",\n      \"bio\": \"string\",\n      \"status\": \"active\",\n      \"createdAt\": \"1970-02-06T20:24:58.445Z\",\n      \"updatedAt\": \"1949-06-22T19:04:15.968Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  },\n  \"message\": \"Login successful\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "2cda61ab-eed1-4669-aa91-0d850a36c96f",
+                  "id": "03bc959f-649e-4f5c-915c-6b629cb9793e",
                   "name": "Validation failed or invalid credentials",
                   "originalRequest": {
                     "url": {
@@ -448,7 +529,53 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f09de3b9-bba2-47c0-9240-4c2a08ebed6c",
+                  "id": "88576c1a-eeef-406d-b36f-64d5394a0d00",
+                  "name": "JSON body exceeds JSON_BODY_LIMIT",
+                  "originalRequest": {
+                    "url": {
+                      "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "login"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "POST",
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"identifier\": \"jane\",\n  \"password\": \"Password123!\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Request Entity Too Large",
+                  "code": 413,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": null,\n  \"message\": \"Invalid credentials\",\n  \"details\": [\n    {\n      \"field\": \"email\",\n      \"message\": \"Invalid email address\"\n    },\n    {\n      \"field\": \"email\",\n      \"message\": \"Invalid email address\"\n    }\n  ]\n}",
+                  "cookie": [],
+                  "_postman_previewlanguage": "json"
+                },
+                {
+                  "id": "13535902-929a-4416-918f-9455c9bc5ac9",
                   "name": "Too many login attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -500,7 +627,7 @@
               }
             },
             {
-              "id": "4a27379a-21e7-4495-9b9f-c2772c5a5ba1",
+              "id": "2d433440-0b14-4481-9e16-4ad0df888402",
               "name": "Request a password reset link",
               "request": {
                 "name": "Request a password reset link",
@@ -545,7 +672,7 @@
               },
               "response": [
                 {
-                  "id": "d675828a-8777-40b9-ae14-f0f8428f5ef9",
+                  "id": "f4f8c162-9009-48e9-acbc-ab8620ce4a7f",
                   "name": "Generic success (sent if email is registered)",
                   "originalRequest": {
                     "url": {
@@ -591,7 +718,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f9beb3be-acfb-4761-942f-651d4b39f9c6",
+                  "id": "82410643-5fad-4cf9-b68f-0dddce336a94",
                   "name": "Validation failed",
                   "originalRequest": {
                     "url": {
@@ -637,7 +764,53 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "44a74ed4-cd86-458e-bf4b-f1f7ef881526",
+                  "id": "9559e2a8-81be-4f9a-8a35-c020af4efdbe",
+                  "name": "JSON body exceeds JSON_BODY_LIMIT",
+                  "originalRequest": {
+                    "url": {
+                      "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "forgot-password"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "POST",
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"email\": \"jane@example.com\",\n  \"resetUrl\": \"https://myapp.com/reset-password\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Request Entity Too Large",
+                  "code": 413,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": null,\n  \"message\": \"Invalid credentials\",\n  \"details\": [\n    {\n      \"field\": \"email\",\n      \"message\": \"Invalid email address\"\n    },\n    {\n      \"field\": \"email\",\n      \"message\": \"Invalid email address\"\n    }\n  ]\n}",
+                  "cookie": [],
+                  "_postman_previewlanguage": "json"
+                },
+                {
+                  "id": "72b77e76-13f8-45e1-8d4c-6ea5e9898016",
                   "name": "Too many password reset requests from this IP",
                   "originalRequest": {
                     "url": {
@@ -689,7 +862,7 @@
               }
             },
             {
-              "id": "fdcfbd3f-73a8-4128-838e-87fd0f2fdc28",
+              "id": "30207ecd-1fb2-4e32-8554-6a1c258c2507",
               "name": "Set a new password with a reset token",
               "request": {
                 "name": "Set a new password with a reset token",
@@ -734,7 +907,7 @@
               },
               "response": [
                 {
-                  "id": "a45af058-fe88-4b4b-ba4b-e7c6a7432ef4",
+                  "id": "abe02672-a6d5-4e99-8754-014a99a5d2cb",
                   "name": "Password updated",
                   "originalRequest": {
                     "url": {
@@ -780,7 +953,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "108b43b1-c87e-4094-8980-960be9ff37bb",
+                  "id": "8afa8296-f44a-4f62-a3bd-81725e5d02c6",
                   "name": "Validation failed or invalid/expired token",
                   "originalRequest": {
                     "url": {
@@ -826,7 +999,53 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "54ddff15-0278-4b35-99be-aa2eccfd3320",
+                  "id": "43b1dc44-0c20-48af-ab23-a16f63b1a69d",
+                  "name": "JSON body exceeds JSON_BODY_LIMIT",
+                  "originalRequest": {
+                    "url": {
+                      "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "reset-password"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "POST",
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"token\": \"a1b2c3d4e5f6...\",\n  \"password\": \"Newpassword123!\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Request Entity Too Large",
+                  "code": 413,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": null,\n  \"message\": \"Invalid credentials\",\n  \"details\": [\n    {\n      \"field\": \"email\",\n      \"message\": \"Invalid email address\"\n    },\n    {\n      \"field\": \"email\",\n      \"message\": \"Invalid email address\"\n    }\n  ]\n}",
+                  "cookie": [],
+                  "_postman_previewlanguage": "json"
+                },
+                {
+                  "id": "d58bc0e8-d274-463d-ade5-0c66f100711f",
                   "name": "Too many reset attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -881,7 +1100,7 @@
           "event": []
         },
         {
-          "id": "82eb7e44-b455-414e-ad04-70e4c8e99fdc",
+          "id": "bec4ffbb-360b-455d-ae87-fd7f7e7fbde2",
           "name": "Get logged-in user profile",
           "request": {
             "name": "Get logged-in user profile",
@@ -918,7 +1137,7 @@
           },
           "response": [
             {
-              "id": "d7527dfe-6c92-453d-9e09-b32fd83d80a9",
+              "id": "3bd58cff-8a3f-43a5-9e78-28402d6a3c99",
               "name": "Current user profile",
               "originalRequest": {
                 "url": {
@@ -959,12 +1178,12 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"2023-12-17T04:23:55.827Z\",\n    \"updatedAt\": \"1950-06-29T04:04:42.318Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
+              "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"1955-08-09T06:30:47.680Z\",\n    \"updatedAt\": \"1993-12-02T14:19:30.297Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "d7e26aa2-ae49-4fe6-bce9-a76c4d5fd762",
+              "id": "480a7b33-f39b-41ef-aaab-5ec96bc4b2f4",
               "name": "Missing, invalid, or expired token",
               "originalRequest": {
                 "url": {
@@ -1010,7 +1229,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "fd7c5e4b-0003-4580-80c7-d79d0aff3e08",
+              "id": "580746b4-1b4f-49b9-982f-f9a44670b366",
               "name": "User not found",
               "originalRequest": {
                 "url": {
@@ -1074,7 +1293,7 @@
     }
   ],
   "info": {
-    "_postman_id": "6327ad33-05bd-45e6-aa7a-0a7409d5e9e2",
+    "_postman_id": "f1ea6734-2b20-49e9-8eab-119858714297",
     "name": "Feed App API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": {
