@@ -3,10 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reset your password</title>
+    <title>{{subject}}</title>
   </head>
   <body>
-    <p>Reset your password by clicking <a href="{{resetLink}}">here</a>.</p>
+    <p>{{message}}</p>
+    <p><strong>{{otp}}</strong></p>
+    <p>This code expires in {{expiresMinutes}} minutes.</p>
     <p>If you did not request this, you can ignore this email.</p>
   </body>
 </html>

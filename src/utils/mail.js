@@ -4,12 +4,24 @@
 
 const nodemailer = require('nodemailer');
 const config = require('../config');
+const { OTP_PURPOSES } = require('../constants/otp');
 const { renderEmailTemplate } = require('./render-email-template');
 
 let transporter;
 
-/** @type {string[]} Last reset links sent — useful in tests (NODE_ENV=test skips SMTP). */
-const sentResetLinks = [];
+/** @type {{ to: string, purpose: string, otp: string }[]} OTPs sent — useful in tests. */
+const sentOtps = [];
+
+const OTP_EMAIL_CONTENT = {
+  [OTP_PURPOSES.VERIFY_EMAIL]: {
+    subject: 'Verify your email',
+    message: 'Use this code to verify your email address:',
+  },
+  [OTP_PURPOSES.RESET_PASSWORD]: {
+    subject: 'Reset your password',
+    message: 'Use this code to reset your password:',
+  },
+};
 
 function getTransporter() {
   if (!transporter) {
@@ -32,15 +44,18 @@ function getTransporter() {
   return transporter;
 }
 
-/**
- * Send a password reset email with the full link (client URL + token query param).
- */
-async function sendPasswordResetEmail({ to, resetLink }) {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`[mail] Password reset link for ${to}: ${resetLink}`);
+async function sendOtpEmail({ to, purpose, otp }) {
+  const content = OTP_EMAIL_CONTENT[purpose];
+
+  if (!content) {
+    throw new Error(`Unsupported OTP email purpose: ${purpose}`);
   }
 
-  sentResetLinks.push(resetLink);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[mail] OTP for ${to} (${purpose}): ${otp}`);
+  }
+
+  sentOtps.push({ to, purpose, otp });
 
   if (process.env.NODE_ENV === 'test') {
     return;
@@ -54,16 +69,23 @@ async function sendPasswordResetEmail({ to, resetLink }) {
     );
   }
 
+  const text = `${content.message} ${otp}. This code expires in ${config.otp.expiresMinutes} minutes.`;
+
   await getTransporter().sendMail({
     from,
     to,
-    subject: 'Reset your password',
-    text: `Reset your password by visiting: ${resetLink}`,
-    html: renderEmailTemplate('password-reset', { resetLink }),
+    subject: content.subject,
+    text,
+    html: renderEmailTemplate('otp', {
+      subject: content.subject,
+      message: content.message,
+      otp,
+      expiresMinutes: String(config.otp.expiresMinutes),
+    }),
   });
 }
 
 module.exports = {
-  sendPasswordResetEmail,
-  sentResetLinks,
+  sendOtpEmail,
+  sentOtps,
 };

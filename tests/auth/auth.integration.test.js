@@ -1,7 +1,7 @@
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const app = require('../../src/app');
-const { validRegisterPayload, VALID_PASSWORD } = require('../helpers');
+const { validRegisterPayload, VALID_PASSWORD, verifyRegisteredUser } = require('../helpers');
 
 // Supertest hits the Express app directly — no real HTTP server needed
 const API = '/api/v1';
@@ -15,12 +15,13 @@ describe('Auth API', () => {
 
       expect(response.status).toBe(201);
       expect(response.body).toMatchObject({
-        message: 'User registered successfully',
+        message: expect.stringMatching(/verification code has been sent/i),
         data: {
           firstName: 'Jane',
           lastName: 'Doe',
           username: 'jane',
           email: 'jane@example.com',
+          emailVerified: false,
         },
       });
       expect(response.body.data.password).toBeUndefined();
@@ -95,6 +96,33 @@ describe('Auth API', () => {
         ]),
       );
     });
+
+    it('stores email in lowercase regardless of input casing', async () => {
+      const response = await request(app)
+        .post(`${API}/auth/register`)
+        .send(validRegisterPayload({ email: 'Jane@Example.com' }));
+
+      expect(response.status).toBe(201);
+      expect(response.body.data.email).toBe('jane@example.com');
+    });
+
+    it('returns 409 when email differs only by case', async () => {
+      await request(app)
+        .post(`${API}/auth/register`)
+        .send(validRegisterPayload({ email: 'jane@example.com' }));
+
+      const response = await request(app)
+        .post(`${API}/auth/register`)
+        .send(
+          validRegisterPayload({
+            email: 'JANE@EXAMPLE.COM',
+            username: 'jane2',
+          }),
+        );
+
+      expect(response.status).toBe(409);
+      expect(response.body.message).toBe('Email already in use');
+    });
   });
 
   describe('POST /auth/login', () => {
@@ -103,6 +131,8 @@ describe('Auth API', () => {
       await request(app)
         .post(`${API}/auth/register`)
         .send(validRegisterPayload());
+
+      await verifyRegisteredUser(app);
     });
 
     it('returns user and token on successful login with username', async () => {
@@ -133,6 +163,15 @@ describe('Auth API', () => {
       expect(response.status).toBe(200);
       expect(response.body.data.user.email).toBe('jane@example.com');
       expect(response.body.data.token).toEqual(expect.any(String));
+    });
+
+    it('allows login with email in any casing', async () => {
+      const response = await request(app)
+        .post(`${API}/auth/login`)
+        .send({ identifier: 'JANE@EXAMPLE.COM', password: VALID_PASSWORD });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.user.email).toBe('jane@example.com');
     });
 
     it('returns 400 for invalid credentials', async () => {
@@ -216,10 +255,11 @@ describe('Auth API', () => {
     });
 
     it('returns the logged-in user profile with a valid token', async () => {
-      // Full flow: register → login → use JWT on protected route
       await request(app)
         .post(`${API}/auth/register`)
         .send(validRegisterPayload());
+
+      await verifyRegisteredUser(app);
 
       const loginResponse = await request(app)
         .post(`${API}/auth/login`)
@@ -240,6 +280,31 @@ describe('Auth API', () => {
         },
       });
       expect(response.body.data.password).toBeUndefined();
+    });
+
+    it('returns 403 for an inactive account even with a valid token', async () => {
+      const UsersModel = require('../../src/modules/users/models/users.model.mongo');
+
+      await request(app)
+        .post(`${API}/auth/register`)
+        .send(validRegisterPayload());
+
+      await verifyRegisteredUser(app);
+
+      const loginResponse = await request(app)
+        .post(`${API}/auth/login`)
+        .send({ identifier: 'jane', password: VALID_PASSWORD });
+
+      const { token } = loginResponse.body.data;
+
+      await UsersModel.updateOne({ username: 'jane' }, { status: 'inactive' });
+
+      const response = await request(app)
+        .get(`${API}/users/me`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('Account is inactive');
     });
   });
 });

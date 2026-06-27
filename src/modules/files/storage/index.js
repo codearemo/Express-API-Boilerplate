@@ -40,9 +40,14 @@ async function restoreArchived(archived) {
   return getStorageDriver().restoreArchived(archived);
 }
 
+async function openFile(fileRecord) {
+  return getStorageDriver().openFile(fileRecord);
+}
+
 module.exports = {
   storeFiles,
   removeFiles,
   archiveFile,
   restoreArchived,
+  openFile,
 };

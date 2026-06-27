@@ -1,70 +1,65 @@
 const request = require('supertest');
 const app = require('../../src/app');
+const { OTP_PURPOSES } = require('../../src/constants/otp');
+const { sentOtps } = require('../../src/utils/mail');
 const {
   validRegisterPayload,
   VALID_PASSWORD,
   VALID_NEW_PASSWORD,
+  getLatestOtp,
+  verifyRegisteredUser,
 } = require('../helpers');
-const { sentResetLinks } = require('../../src/utils/mail');
 
 const API = '/api/v1';
-const RESET_URL = 'https://myapp.com/reset-password';
 const FORGOT_PASSWORD_MESSAGE =
-  'If that email is registered, a password reset link has been sent.';
-
-function getTokenFromResetLink(link) {
-  return new URL(link).searchParams.get('token');
-}
+  'If that email is registered, a verification code has been sent.';
 
 describe('Password reset API', () => {
   beforeEach(() => {
-    sentResetLinks.length = 0;
+    sentOtps.length = 0;
   });
 
   describe('POST /auth/forgot-password', () => {
-    it('returns the same success message and sends email when email exists', async () => {
+    it('returns the same success message and sends an OTP when email exists', async () => {
       await request(app)
         .post(`${API}/auth/register`)
         .send(validRegisterPayload());
 
+      await verifyRegisteredUser(app);
+
+      sentOtps.length = 0;
+
       const response = await request(app)
         .post(`${API}/auth/forgot-password`)
-        .send({
-          email: 'jane@example.com',
-          resetUrl: RESET_URL,
-        });
+        .send({ email: 'jane@example.com' });
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
         data: null,
         message: FORGOT_PASSWORD_MESSAGE,
       });
-      expect(sentResetLinks).toHaveLength(1);
-      expect(sentResetLinks[0]).toMatch(
-        /^https:\/\/myapp\.com\/reset-password\?token=[a-f0-9]+$/,
-      );
+      expect(sentOtps).toHaveLength(1);
+      expect(sentOtps[0]).toMatchObject({
+        to: 'jane@example.com',
+        purpose: OTP_PURPOSES.RESET_PASSWORD,
+        otp: expect.stringMatching(/^\d{6}$/),
+      });
     });
 
     it('returns the same success message without sending email for unknown email', async () => {
       const response = await request(app)
         .post(`${API}/auth/forgot-password`)
-        .send({
-          email: 'unknown@example.com',
-          resetUrl: RESET_URL,
-        });
+        .send({ email: 'unknown@example.com' });
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe(FORGOT_PASSWORD_MESSAGE);
-      expect(sentResetLinks).toHaveLength(0);
+      expect(sentOtps).toHaveLength(0);
     });
 
     it('returns 400 when validation fails', async () => {
       const response = await request(app)
         .post(`${API}/auth/forgot-password`)
-        .send({
-          email: 'not-an-email',
-          resetUrl: 'not-a-url',
-        });
+        .send({ email: 'not-an-email' });
 
       expect(response.status).toBe(400);
       expect(response.body.data).toBeNull();
@@ -81,19 +76,18 @@ describe('Password reset API', () => {
     it('returns 200 when SMTP fails for a registered email', async () => {
       const mail = require('../../src/utils/mail');
       const sendSpy = vi
-        .spyOn(mail, 'sendPasswordResetEmail')
+        .spyOn(mail, 'sendOtpEmail')
         .mockRejectedValue(new Error('SMTP down'));
 
       await request(app)
         .post(`${API}/auth/register`)
         .send(validRegisterPayload());
 
+      await verifyRegisteredUser(app);
+
       const response = await request(app)
         .post(`${API}/auth/forgot-password`)
-        .send({
-          email: 'jane@example.com',
-          resetUrl: RESET_URL,
-        });
+        .send({ email: 'jane@example.com' });
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe(FORGOT_PASSWORD_MESSAGE);
@@ -108,18 +102,25 @@ describe('Password reset API', () => {
         .post(`${API}/auth/register`)
         .send(validRegisterPayload());
 
-      await request(app).post(`${API}/auth/forgot-password`).send({
-        email: 'jane@example.com',
-        resetUrl: RESET_URL,
-      });
+      await verifyRegisteredUser(app);
+
+      sentOtps.length = 0;
+
+      await request(app)
+        .post(`${API}/auth/forgot-password`)
+        .send({ email: 'jane@example.com' });
     });
 
     it('updates the password so the user can log in with the new one', async () => {
-      const token = getTokenFromResetLink(sentResetLinks[0]);
+      const otp = getLatestOtp('jane@example.com', OTP_PURPOSES.RESET_PASSWORD);
 
       const resetResponse = await request(app)
         .post(`${API}/auth/reset-password`)
-        .send({ token, password: VALID_NEW_PASSWORD });
+        .send({
+          email: 'jane@example.com',
+          otp,
+          password: VALID_NEW_PASSWORD,
+        });
 
       expect(resetResponse.status).toBe(200);
       expect(resetResponse.body).toMatchObject({
@@ -140,49 +141,65 @@ describe('Password reset API', () => {
       expect(newPasswordLogin.status).toBe(200);
     });
 
-    it('returns 400 for an invalid token', async () => {
+    it('returns 400 for an invalid OTP', async () => {
       const response = await request(app)
         .post(`${API}/auth/reset-password`)
-        .send({ token: 'invalid-token', password: VALID_NEW_PASSWORD });
+        .send({
+          email: 'jane@example.com',
+          otp: '000000',
+          password: VALID_NEW_PASSWORD,
+        });
 
       expect(response.status).toBe(400);
       expect(response.body).toMatchObject({
         data: null,
-        message: 'Invalid or expired reset token',
+        message: 'Invalid or expired verification code',
       });
     });
 
-    it('returns 400 when the token has expired', async () => {
-      const token = getTokenFromResetLink(sentResetLinks[0]);
-      const mongoose = require('mongoose');
+    it('returns 400 when the OTP has expired', async () => {
+      const otp = getLatestOtp('jane@example.com', OTP_PURPOSES.RESET_PASSWORD);
+      const EmailOtpsModel = require('../../src/modules/auth/models/email-otps.model.mongo');
 
-      await mongoose.connection.collection('users').updateOne(
-        { email: 'jane@example.com' },
-        { $set: { passwordResetExpiresAt: new Date(Date.now() - 1000) } },
+      await EmailOtpsModel.updateOne(
+        { email: 'jane@example.com', purpose: OTP_PURPOSES.RESET_PASSWORD },
+        { $set: { expiresAt: new Date(Date.now() - 1000) } },
       );
 
       const response = await request(app)
         .post(`${API}/auth/reset-password`)
-        .send({ token, password: VALID_NEW_PASSWORD });
+        .send({
+          email: 'jane@example.com',
+          otp,
+          password: VALID_NEW_PASSWORD,
+        });
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toBe('Invalid or expired reset token');
+      expect(response.body.message).toBe('Invalid or expired verification code');
     });
 
-    it('returns 400 when the same reset token is used twice', async () => {
-      const token = getTokenFromResetLink(sentResetLinks[0]);
+    it('returns 400 when the same OTP is used twice', async () => {
+      const otp = getLatestOtp('jane@example.com', OTP_PURPOSES.RESET_PASSWORD);
 
       await request(app)
         .post(`${API}/auth/reset-password`)
-        .send({ token, password: VALID_NEW_PASSWORD })
+        .send({
+          email: 'jane@example.com',
+          otp,
+          password: VALID_NEW_PASSWORD,
+        })
         .expect(200);
 
       const response = await request(app)
         .post(`${API}/auth/reset-password`)
-        .send({ token, password: VALID_NEW_PASSWORD });
+        .send({
+          email: 'jane@example.com',
+          otp,
+          password: VALID_NEW_PASSWORD,
+        });
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toBe('Invalid or expired reset token');
+      expect(response.body.message).toBe('Invalid or expired verification code');
     });
   });
 });

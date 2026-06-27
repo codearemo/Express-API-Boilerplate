@@ -19,8 +19,6 @@ function toPublicUser(user) {
   if (!user) return null;
   const {
     password: _password,
-    passwordResetToken: _passwordResetToken,
-    passwordResetExpiresAt: _passwordResetExpiresAt,
     authProviders: _authProviders,
     ...publicUser
   } = user;

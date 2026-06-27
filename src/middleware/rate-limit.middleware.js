@@ -33,6 +33,8 @@ const {
   login,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  resendVerification,
   refresh,
   logout,
   socialLogin,
@@ -69,6 +71,18 @@ const resetPasswordLimiter = createRateLimiter({
   message: 'Too many reset attempts, please try again later',
 });
 
+const verifyEmailLimiter = createRateLimiter({
+  limit: verifyEmail.max,
+  windowMs: verifyEmail.windowMs,
+  message: 'Too many verification attempts, please try again later',
+});
+
+const resendVerificationLimiter = createRateLimiter({
+  limit: resendVerification.max,
+  windowMs: resendVerification.windowMs,
+  message: 'Too many verification resend attempts, please try again later',
+});
+
 const refreshLimiter = createRateLimiter({
   limit: refresh.max,
   windowMs: refresh.windowMs,
@@ -100,6 +114,8 @@ module.exports = {
   loginLimiter,
   forgotPasswordLimiter,
   resetPasswordLimiter,
+  verifyEmailLimiter,
+  resendVerificationLimiter,
   refreshLimiter,
   logoutLimiter,
   socialLoginLimiter,

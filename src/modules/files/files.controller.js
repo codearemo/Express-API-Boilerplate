@@ -1,5 +1,7 @@
 const filesService = require('./files.service');
+const storage = require('./storage');
 const { sendSuccess } = require('../../utils/api-response');
+const path = require('path');
 
 async function uploadFiles(req, res, next) {
   try {
@@ -34,7 +36,31 @@ async function archiveFile(req, res, next) {
   }
 }
 
+async function downloadFile(req, res, next) {
+  try {
+    const fileRecord = await filesService.getFileForDownload(req.params.fileId);
+    const opened = await storage.openFile(fileRecord);
+
+    res.setHeader('Content-Type', fileRecord.mimeType);
+
+    if (opened.redirectUrl) {
+      res.redirect(opened.redirectUrl);
+      return;
+    }
+
+    if (opened.path) {
+      res.sendFile(path.resolve(opened.path));
+      return;
+    }
+
+    opened.stream.pipe(res);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   uploadFiles,
   archiveFile,
+  downloadFile,
 };

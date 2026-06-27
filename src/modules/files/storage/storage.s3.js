@@ -5,6 +5,7 @@
 const {
   CopyObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } = require('@aws-sdk/client-s3');
@@ -162,11 +163,39 @@ async function restoreArchived({ name, archivedName }) {
   );
 }
 
+async function openFile({ name, mimeType }) {
+  const { bucket } = config.s3;
+  const client = getS3Client();
+
+  try {
+    const response = await client.send(
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: name,
+      }),
+    );
+
+    return {
+      stream: response.Body,
+      mimeType,
+    };
+  } catch (error) {
+    if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
+      const notFound = new Error('File not found');
+      notFound.statusCode = 404;
+      throw notFound;
+    }
+
+    throw error;
+  }
+}
+
 module.exports = {
   storeFiles,
   removeFile,
   archiveFile,
   restoreArchived,
+  openFile,
   __setClientForTests(client) {
     testClient = client;
   },

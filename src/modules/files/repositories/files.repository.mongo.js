@@ -50,6 +50,24 @@ async function findActiveByIdAndUserId(id, userId) {
   return doc;
 }
 
+async function findActiveById(id) {
+  const doc = await FilesModel.findOne({
+    _id: id,
+    status: 'active',
+  }).lean();
+
+  return doc;
+}
+
+async function findActiveByName(name) {
+  const doc = await FilesModel.findOne({
+    name,
+    status: 'active',
+  }).lean();
+
+  return doc;
+}
+
 async function markArchived(fileId, archivedName) {
   const doc = await FilesModel.findByIdAndUpdate(
     fileId,
@@ -69,5 +87,7 @@ module.exports = {
   createMany,
   findActiveByNameAndUserId,
   findActiveByIdAndUserId,
+  findActiveById,
+  findActiveByName,
   markArchived,
 };

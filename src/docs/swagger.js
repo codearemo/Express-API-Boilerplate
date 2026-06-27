@@ -107,35 +107,62 @@ const options = {
         },
         ForgotPasswordRequest: {
           type: 'object',
-          required: ['email', 'resetUrl'],
+          required: ['email'],
           properties: {
             email: {
               type: 'string',
               format: 'email',
               example: 'jane@example.com',
             },
-            resetUrl: {
-              type: 'string',
-              format: 'uri',
-              description:
-                'Full frontend reset route — server appends `?token=` or `&token=`',
-              example: 'https://myapp.com/reset-password',
-            },
           },
         },
         ResetPasswordRequest: {
           type: 'object',
-          required: ['token', 'password'],
+          required: ['email', 'otp', 'password'],
           properties: {
-            token: {
+            email: {
               type: 'string',
-              description: 'Token from the reset link query string',
-              example: 'a1b2c3d4e5f6...',
+              format: 'email',
+              example: 'jane@example.com',
+            },
+            otp: {
+              type: 'string',
+              pattern: '^\\d{6}$',
+              description: '6-digit code from the reset email',
+              example: '123456',
             },
             password: {
               type: 'string',
               minLength: 8,
               example: 'Newpassword123!',
+            },
+          },
+        },
+        VerifyEmailRequest: {
+          type: 'object',
+          required: ['email', 'otp'],
+          properties: {
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'jane@example.com',
+            },
+            otp: {
+              type: 'string',
+              pattern: '^\\d{6}$',
+              description: '6-digit code from the verification email',
+              example: '123456',
+            },
+          },
+        },
+        ResendVerificationRequest: {
+          type: 'object',
+          required: ['email'],
+          properties: {
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'jane@example.com',
             },
           },
         },
@@ -407,6 +434,13 @@ const options = {
             message: 'Email is required from the social provider',
           },
         },
+        ApiSocialEmailNotVerifiedError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Email not verified with the social provider',
+          },
+        },
         ApiSocialProviderNotConfiguredError: {
           allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
           example: {
@@ -425,7 +459,14 @@ const options = {
           allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
           example: {
             data: null,
-            message: 'Invalid or expired reset token',
+            message: 'Invalid or expired verification code',
+          },
+        },
+        ApiEmailNotVerifiedError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Email not verified',
           },
         },
         ApiInvalidRefreshTokenError: {
@@ -503,6 +544,21 @@ const options = {
           example: {
             data: null,
             message: 'Too many reset attempts, please try again later',
+          },
+        },
+        ApiRateLimitVerifyEmailError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Too many verification attempts, please try again later',
+          },
+        },
+        ApiRateLimitResendVerificationError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message:
+              'Too many resend verification attempts, please try again later',
           },
         },
         ApiRateLimitRefreshError: {

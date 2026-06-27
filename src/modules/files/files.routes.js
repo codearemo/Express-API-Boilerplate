@@ -23,4 +23,11 @@ router.delete(
   filesController.archiveFile,
 );
 
+router.get(
+  '/:fileId/download',
+  authenticate,
+  uploadLimiter,
+  filesController.downloadFile,
+);
+
 module.exports = router;

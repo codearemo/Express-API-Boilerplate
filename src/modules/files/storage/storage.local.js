@@ -67,9 +67,22 @@ async function restoreArchived({ name }) {
   fs.renameSync(archivePath, activePath);
 }
 
+function openFile({ name }) {
+  const filePath = path.join(config.upload.local.directory, name);
+
+  if (!fs.existsSync(filePath)) {
+    const error = new Error('File not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return { path: filePath };
+}
+
 module.exports = {
   storeFiles,
   removeFile,
   archiveFile,
   restoreArchived,
+  openFile,
 };

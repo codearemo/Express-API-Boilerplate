@@ -4,7 +4,8 @@ const request = require('supertest');
 const app = require('../../src/app');
 const config = require('../../src/config');
 const filesRepository = require('../../src/modules/files/repositories');
-const { getAuthToken, validRegisterPayload, VALID_PASSWORD } = require('../helpers');
+const { getAuthToken, validRegisterPayload, VALID_PASSWORD, getLatestOtp } = require('../helpers');
+const { OTP_PURPOSES } = require('../../src/constants/otp');
 
 const API = '/api/v1';
 
@@ -22,6 +23,13 @@ async function getSecondUserToken() {
         email: 'john@example.com',
       }),
     );
+
+  await request(app)
+    .post(`${API}/auth/verify-email`)
+    .send({
+      email: 'john@example.com',
+      otp: getLatestOtp('john@example.com', OTP_PURPOSES.VERIFY_EMAIL),
+    });
 
   const loginResponse = await request(app)
     .post(`${API}/auth/login`)
@@ -234,5 +242,51 @@ describe('DELETE /uploads/:fileId', () => {
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe('File not found');
+  });
+});
+
+describe('protected file access', () => {
+  const previousPublicAccess = process.env.UPLOAD_PUBLIC_ACCESS;
+
+  beforeAll(() => {
+    process.env.UPLOAD_PUBLIC_ACCESS = 'false';
+  });
+
+  afterAll(() => {
+    if (previousPublicAccess === undefined) {
+      delete process.env.UPLOAD_PUBLIC_ACCESS;
+    } else {
+      process.env.UPLOAD_PUBLIC_ACCESS = previousPublicAccess;
+    }
+  });
+
+  it('returns auth-protected download URLs and blocks anonymous access', async () => {
+    const token = await getAuthToken(app);
+
+    const uploadResponse = await request(app)
+      .post(`${API}/uploads`)
+      .set('Authorization', `Bearer ${token}`)
+      .attach('files', JPEG_BYTES, 'protected.jpg');
+
+    expect(uploadResponse.status).toBe(201);
+    expect(uploadResponse.body.data[0].url).toMatch(
+      /\/api\/v1\/uploads\/[a-f0-9]{24}\/download$/,
+    );
+
+    const downloadPath = new URL(uploadResponse.body.data[0].url).pathname;
+    const fileName = uploadResponse.body.data[0].name;
+
+    const unauthenticated = await request(app).get(downloadPath);
+    expect(unauthenticated.status).toBe(401);
+
+    const publicStatic = await request(app).get(`/uploads/${fileName}`);
+    expect(publicStatic.status).toBe(404);
+
+    const authenticated = await request(app)
+      .get(downloadPath)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(authenticated.status).toBe(200);
+    expect(authenticated.headers['content-type']).toMatch(/image\/jpeg/);
   });
 });

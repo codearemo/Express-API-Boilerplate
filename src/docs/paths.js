@@ -36,6 +36,9 @@
  *   post:
  *     tags: [Auth]
  *     summary: Register a new user
+ *     description: |
+ *       Creates the account with `emailVerified: false` and emails a 6-digit verification code.
+ *       Login is blocked until `POST /auth/verify-email` succeeds.
  *     requestBody:
  *       required: true
  *       content:
@@ -77,6 +80,92 @@
 
 /**
  * @openapi
+ * /api/v1/auth/verify-email:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Verify email with OTP
+ *     description: |
+ *       Submit the 6-digit code from the registration email.
+ *       Returns **400** for invalid or expired codes (max attempts enforced).
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyEmailRequest'
+ *     responses:
+ *       200:
+ *         description: Email verified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponseMessage'
+ *       400:
+ *         description: Validation failed or invalid/expired code
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiValidationErrorResponse'
+ *                 - $ref: '#/components/schemas/ApiInvalidResetTokenError'
+ *       429:
+ *         description: Too many verify-email attempts from this IP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiRateLimitVerifyEmailError'
+ *       413:
+ *         description: JSON body exceeds JSON_BODY_LIMIT
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiJsonBodyTooLargeError'
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/resend-verification:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Resend email verification OTP
+ *     description: |
+ *       Sends a new verification code when the email is registered and not yet verified.
+ *       Always returns the same success message to avoid email enumeration.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResendVerificationRequest'
+ *     responses:
+ *       200:
+ *         description: Generic success (sent if eligible)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponseMessage'
+ *       400:
+ *         description: Validation failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiValidationErrorResponse'
+ *       429:
+ *         description: Too many resend attempts from this IP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiRateLimitResendVerificationError'
+ *       413:
+ *         description: JSON body exceeds JSON_BODY_LIMIT
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiJsonBodyTooLargeError'
+ */
+
+/**
+ * @openapi
  * /api/v1/auth/login:
  *   post:
  *     tags: [Auth]
@@ -87,6 +176,7 @@
  *       Use `token` as `Authorization: Bearer <token>` on protected routes.
  *       When `token` expires, call `POST /auth/refresh` with `refreshToken`.
  *       Returns **403** if the account `status` is `inactive`.
+ *       Returns **403** if the email is not verified (`POST /auth/verify-email` required).
  *     requestBody:
  *       required: true
  *       content:
@@ -109,11 +199,13 @@
  *                 - $ref: '#/components/schemas/ApiValidationErrorResponse'
  *                 - $ref: '#/components/schemas/ApiInvalidCredentialsError'
  *       403:
- *         description: Account is inactive
+ *         description: Account is inactive or email not verified
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiInactiveAccountError'
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiInactiveAccountError'
+ *                 - $ref: '#/components/schemas/ApiEmailNotVerifiedError'
  *       429:
  *         description: Too many login attempts from this IP
  *         content:
@@ -140,6 +232,8 @@
  *
  *       - New users are created automatically (username is generated).
  *       - If the provider email matches an existing account, the provider is linked to that account.
+ *       - New accounts and email linking require `emailVerified: true` from the provider (no separate app email flow).
+ *       - Returning users are matched by `provider` + `providerId` and do not re-check email verification.
  *       - Returns **403** if the account `status` is `inactive`.
  *     requestBody:
  *       required: true
@@ -155,13 +249,14 @@
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponseLogin'
  *       400:
- *         description: Validation failed or provider did not return an email
+ *         description: Validation failed, unverified provider email, or missing email
  *         content:
  *           application/json:
  *             schema:
  *               oneOf:
  *                 - $ref: '#/components/schemas/ApiValidationErrorResponse'
  *                 - $ref: '#/components/schemas/ApiSocialEmailRequiredError'
+ *                 - $ref: '#/components/schemas/ApiSocialEmailNotVerifiedError'
  *       401:
  *         description: Invalid or expired social token
  *         content:
@@ -296,10 +391,9 @@
  * /api/v1/auth/forgot-password:
  *   post:
  *     tags: [Auth]
- *     summary: Request a password reset link
+ *     summary: Request a password reset OTP
  *     description: |
- *       Send the user's email and the full frontend reset route (`resetUrl`).
- *       The server appends `?token=...` (or `&token=...`) and emails the link.
+ *       Send the user's email. If the account has a password, a 6-digit reset code is emailed.
  *       Always returns the same success message to avoid email enumeration.
  *     requestBody:
  *       required: true
@@ -339,9 +433,9 @@
  * /api/v1/auth/reset-password:
  *   post:
  *     tags: [Auth]
- *     summary: Set a new password with a reset token
+ *     summary: Set a new password with email and OTP
  *     description: |
- *       Use the `token` query param from the reset link emailed to the user.
+ *       Use the 6-digit code from the reset email together with the account email.
  *       On success, all refresh tokens for that user are revoked server-side.
  *       Log in separately with the new password to obtain a new token pair.
  *     requestBody:
@@ -358,7 +452,7 @@
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponseMessage'
  *       400:
- *         description: Validation failed or invalid/expired token
+ *         description: Validation failed or invalid/expired OTP
  *         content:
  *           application/json:
  *             schema:
@@ -388,6 +482,8 @@
  *     description: |
  *       Multipart upload using field name `files` (repeat for multiple files).
  *       Storage backend is selected via `UPLOAD_DRIVER` (`local`, `s3`, `cloudinary`).
+ *       When `UPLOAD_PUBLIC_ACCESS=false`, response `url` values point to
+ *       `GET /uploads/{id}/download` (JWT required).
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -426,6 +522,55 @@
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiFileTooLargeError'
+ *       429:
+ *         description: Upload rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiRateLimitUploadError'
+ */
+
+/**
+ * @openapi
+ * /api/v1/uploads/{fileId}/download:
+ *   get:
+ *     tags: [Uploads]
+ *     summary: Download an active uploaded file
+ *     description: |
+ *       Streams an active file to the client. Requires a valid JWT.
+ *       Used when `UPLOAD_PUBLIC_ACCESS=false` (default in production).
+ *       Pass the file `id` from the upload response (recommended), or the stored `name`.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: fileId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: File `id` from the upload response, or stored `name`
+ *     responses:
+ *       200:
+ *         description: File stream
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       401:
+ *         description: Missing, invalid, or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiAuthRequiredError'
+ *                 - $ref: '#/components/schemas/ApiInvalidTokenError'
+ *       404:
+ *         description: File not found or archived
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiNotFoundError'
  *       429:
  *         description: Upload rate limit exceeded
  *         content:

@@ -120,11 +120,16 @@ async function restoreArchived({ name, archivedName }) {
   });
 }
 
+function openFile({ url }) {
+  return { redirectUrl: url };
+}
+
 module.exports = {
   storeFiles,
   removeFile,
   archiveFile,
   restoreArchived,
+  openFile,
   __setUploaderForTests(uploader) {
     testUploader = uploader;
   },

@@ -53,8 +53,8 @@ feed-app-server/
 │   │   └── users/              # User model, repository, profile
 │   ├── utils/
 │   │   ├── api-response.js     # Uniform response envelope
-│   │   ├── mail.js             # SMTP email (password reset)
-│   │   └── password-reset.js   # Reset token generation and link building
+│   │   ├── mail.js             # SMTP email (OTP delivery)
+│   │   └── otp.js              # OTP generation and hashing
 │   ├── app.js                  # Express app setup
 │   └── server.js               # Entry point
 ├── .env                        # Local secrets (not committed)
@@ -142,7 +142,8 @@ SMTP_SECURE=false
 SMTP_USER=your-smtp-user
 SMTP_PASS=your-smtp-password
 SMTP_FROM="Feed App <noreply@example.com>"
-PASSWORD_RESET_EXPIRES_MINUTES=60
+OTP_EXPIRES_MINUTES=10
+OTP_MAX_ATTEMPTS=5
 
 # Auth rate limits (per IP)
 RATE_LIMIT_GLOBAL_MAX=200
@@ -155,6 +156,10 @@ RATE_LIMIT_FORGOT_PASSWORD_MAX=5
 RATE_LIMIT_FORGOT_PASSWORD_WINDOW_MS=300000
 RATE_LIMIT_RESET_PASSWORD_MAX=10
 RATE_LIMIT_RESET_PASSWORD_WINDOW_MS=300000
+RATE_LIMIT_VERIFY_EMAIL_MAX=10
+RATE_LIMIT_VERIFY_EMAIL_WINDOW_MS=300000
+RATE_LIMIT_RESEND_VERIFICATION_MAX=5
+RATE_LIMIT_RESEND_VERIFICATION_WINDOW_MS=300000
 RATE_LIMIT_REFRESH_MAX=20
 RATE_LIMIT_REFRESH_WINDOW_MS=300000
 RATE_LIMIT_LOGOUT_MAX=20
@@ -182,7 +187,8 @@ RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS=300000
 | `SMTP_USER` | Yes††† | SMTP username |
 | `SMTP_PASS` | Yes††† | SMTP password |
 | `SMTP_FROM` | No | From address (defaults to `SMTP_USER`) |
-| `PASSWORD_RESET_EXPIRES_MINUTES` | No | Reset token TTL (default: `60`) |
+| `OTP_EXPIRES_MINUTES` | No | OTP expiry for verify-email and reset-password (default: `10`) |
+| `OTP_MAX_ATTEMPTS` | No | Max failed OTP attempts before invalidation (default: `5`) |
 | `RATE_LIMIT_GLOBAL_MAX` | No | Max requests per IP across all routes (default: `200`) |
 | `RATE_LIMIT_GLOBAL_WINDOW_MS` | No | Global window in ms (default: `900000` = 15 min) |
 | `RATE_LIMIT_REGISTER_MAX` | No | Max register requests per IP per window (default: `10`) |
@@ -193,6 +199,10 @@ RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS=300000
 | `RATE_LIMIT_FORGOT_PASSWORD_WINDOW_MS` | No | Forgot-password window in ms (default: `300000` = 5 min) |
 | `RATE_LIMIT_RESET_PASSWORD_MAX` | No | Max reset-password requests per IP (default: `10`) |
 | `RATE_LIMIT_RESET_PASSWORD_WINDOW_MS` | No | Reset-password window in ms (default: `300000` = 5 min) |
+| `RATE_LIMIT_VERIFY_EMAIL_MAX` | No | Max verify-email requests per IP (default: `10`) |
+| `RATE_LIMIT_VERIFY_EMAIL_WINDOW_MS` | No | Verify-email window in ms (default: `300000` = 5 min) |
+| `RATE_LIMIT_RESEND_VERIFICATION_MAX` | No | Max resend-verification requests per IP (default: `5`) |
+| `RATE_LIMIT_RESEND_VERIFICATION_WINDOW_MS` | No | Resend-verification window in ms (default: `300000` = 5 min) |
 | `RATE_LIMIT_REFRESH_MAX` | No | Max refresh requests per IP (default: `20`) |
 | `RATE_LIMIT_REFRESH_WINDOW_MS` | No | Refresh window in ms (default: `300000` = 5 min) |
 | `RATE_LIMIT_LOGOUT_MAX` | No | Max logout requests per IP (default: `20`) |
@@ -200,6 +210,7 @@ RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS=300000
 | `RATE_LIMIT_SOCIAL_LOGIN_MAX` | No | Max social login requests per IP (default: `10`) |
 | `RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS` | No | Social login window in ms (default: `300000` = 5 min) |
 | `UPLOAD_DRIVER` | No | Storage backend: `local`, `s3`, or `cloudinary` (default: `local`) |
+| `UPLOAD_PUBLIC_ACCESS` | No | Serve local files at `/uploads` without JWT (default: `true` except when `NODE_ENV=production`) |
 | `UPLOAD_MAX_FILE_SIZE` | No | Max bytes per file (default: `5242880` = 5MB) |
 | `UPLOAD_MAX_FILES` | No | Max files per request (default: `10`) |
 | `UPLOAD_ALLOWED_MIME_TYPES` | No | Comma-separated allowlist (default: JPEG, PNG, GIF, WebP, PDF) |
@@ -247,20 +258,25 @@ Interactive docs: [http://localhost:3003/api-docs](http://localhost:3003/api-doc
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/health` | No | Health check (includes MongoDB ping; **503** if DB unavailable) |
-| `POST` | `/api/v1/auth/register` | No | Create a new user |
+| `POST` | `/api/v1/auth/register` | No | Create a new user (sends email verification OTP) |
+| `POST` | `/api/v1/auth/verify-email` | No | Confirm email with 6-digit OTP |
+| `POST` | `/api/v1/auth/resend-verification` | No | Resend email verification OTP |
 | `POST` | `/api/v1/auth/login` | No | Login — returns access `token` + `refreshToken` |
 | `POST` | `/api/v1/auth/social` | No | Social login (Google or Apple `idToken`) |
 | `POST` | `/api/v1/auth/refresh` | No | Exchange `refreshToken` for a new token pair |
 | `POST` | `/api/v1/auth/logout` | No | Revoke a `refreshToken` |
-| `POST` | `/api/v1/auth/forgot-password` | No | Email a password reset link |
-| `POST` | `/api/v1/auth/reset-password` | No | Set new password with reset token |
+| `POST` | `/api/v1/auth/forgot-password` | No | Email a password reset OTP |
+| `POST` | `/api/v1/auth/reset-password` | No | Set new password with email + OTP |
 | `POST` | `/api/v1/uploads` | Bearer JWT | Upload one or more files (`multipart/form-data`, field `files`) |
+| `GET` | `/api/v1/uploads/:fileId/download` | Bearer JWT | Download an active file (used when `UPLOAD_PUBLIC_ACCESS=false`) |
 | `DELETE` | `/api/v1/uploads/:fileId` | Bearer JWT | Soft-delete by `id` (recommended) or `name` from upload response |
 | `GET` | `/api/v1/users/me` | Bearer JWT | Get logged-in user profile |
 
 ### Register
 
 Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.
+
+After registration, a **6-digit verification code** is emailed. Login is blocked until the email is verified.
 
 ```http
 POST /api/v1/auth/register
@@ -275,11 +291,40 @@ Content-Type: application/json
 }
 ```
 
+### Verify email
+
+Submit the code from the registration email:
+
+```http
+POST /api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "jane@example.com",
+  "otp": "123456"
+}
+```
+
+To request a new code:
+
+```http
+POST /api/v1/auth/resend-verification
+Content-Type: application/json
+
+{
+  "email": "jane@example.com"
+}
+```
+
+Both verify and resend endpoints use anti-enumeration messages when the email is unknown or already verified.
+
 ### Login
 
 Send a single `identifier` — email **or** username.
 
 Returns **403** with `"Account is inactive"` if the user's `status` is `inactive`.
+
+Returns **403** with `"Email not verified"` until `POST /auth/verify-email` succeeds.
 
 ```http
 POST /api/v1/auth/login
@@ -326,8 +371,9 @@ Content-Type: application/json
 
 Supported `provider` values: `google`, `apple`.
 
-- New users get an auto-generated username (`user_<hex>`).
-- If the provider email matches an existing account, the provider is linked to that account.
+- New users get an auto-generated username (`user_<hex>`) and `emailVerified: true` (provider already verified the email).
+- If the provider email matches an existing account, the provider is linked to that account; `emailVerified` is set when the provider reports a verified email.
+- **No separate verify-email OTP for social sign-up** — Google/Apple verify ownership; the server only accepts tokens where the provider sets `emailVerified: true` (for new sign-ups and linking).
 - Social-only accounts cannot use password login (`400` — `This account uses social login`).
 
 When the access token expires, exchange the refresh token:
@@ -354,32 +400,32 @@ Content-Type: application/json
 
 ### Forgot password
 
-The client sends the **full frontend reset route**. The server appends `?token=...` (or `&token=...` if the URL already has query params) and emails the link.
+Send the user's email. If the account has a password, a **6-digit reset code** is emailed.
 
 ```http
 POST /api/v1/auth/forgot-password
 Content-Type: application/json
 
 {
-  "email": "jane@example.com",
-  "resetUrl": "https://myapp.com/reset-password"
+  "email": "jane@example.com"
 }
 ```
 
 Always returns the same success message — even if the email is not registered or email delivery fails.
 
-In non-production environments, the reset link is also logged to the console.
+In non-production environments, the OTP is also logged to the console.
 
 ### Reset password
 
-Use the `token` from the emailed link. On success, **all refresh tokens for that user are revoked** — existing sessions cannot refresh. Log in separately with the new password to get a new token pair.
+Use the code from the email together with the account email. On success, **all refresh tokens for that user are revoked** — existing sessions cannot refresh. Log in separately with the new password to get a new token pair.
 
 ```http
 POST /api/v1/auth/reset-password
 Content-Type: application/json
 
 {
-  "token": "<token-from-email-link>",
+  "email": "jane@example.com",
+  "otp": "123456",
   "password": "Newpassword123!"
 }
 ```
@@ -428,9 +474,11 @@ Set `UPLOAD_DRIVER` in `.env` to pick the storage backend (same idea as `DB_DRIV
 
 | Driver | Behavior |
 |--------|----------|
-| `local` | Files saved under `UPLOAD_DIR`, served at `/uploads/<name>` |
-| `s3` | Files uploaded to AWS S3; response URLs point to S3 (or `S3_PUBLIC_URL_BASE`) |
-| `cloudinary` | Files uploaded to Cloudinary; response URLs are Cloudinary CDN links |
+| `local` | Files saved under `UPLOAD_DIR`. Public `/uploads/<name>` when `UPLOAD_PUBLIC_ACCESS=true`; otherwise use `GET /uploads/:id/download` with JWT |
+| `s3` | Files uploaded to AWS S3; response URLs point to S3 (or `S3_PUBLIC_URL_BASE`) when public; otherwise auth-protected download route |
+| `cloudinary` | Files uploaded to Cloudinary; response URLs are Cloudinary CDN links when public; otherwise auth-protected download route |
+
+**Production default:** `UPLOAD_PUBLIC_ACCESS` is `false` when `NODE_ENV=production`. Anonymous users cannot fetch files by URL; any logged-in user with a valid JWT can download active files via `GET /api/v1/uploads/:fileId/download`.
 
 Default limits: **5MB per file**, **10 files** per request. Allowed types: JPEG, PNG, GIF, WebP, PDF.
 
@@ -530,7 +578,7 @@ Access JWT payload contains only `{ sub: userId }` — no email or password in t
 
 ### Inactive accounts
 
-Users have `status: active | inactive` (default `active`). **Login** and **refresh** return **403** `"Account is inactive"` when `status` is `inactive`. An existing access JWT may still work on protected routes until it expires — only login and refresh are blocked today.
+Users have `status: active | inactive` (default `active`). **Login**, **refresh**, **social login**, and **all protected routes** return **403** `"Account is inactive"` when `status` is `inactive`.
 
 ### Rate limiting
 

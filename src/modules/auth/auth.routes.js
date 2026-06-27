@@ -6,6 +6,8 @@ const {
   socialLoginLimiter,
   forgotPasswordLimiter,
   resetPasswordLimiter,
+  verifyEmailLimiter,
+  resendVerificationLimiter,
   refreshLimiter,
   logoutLimiter,
 } = require('../../middleware/rate-limit.middleware');
@@ -13,6 +15,14 @@ const {
 const router = express.Router();
 
 router.post('/register', registerLimiter, authController.register);
+
+router.post('/verify-email', verifyEmailLimiter, authController.verifyEmail);
+
+router.post(
+  '/resend-verification',
+  resendVerificationLimiter,
+  authController.resendVerification,
+);
 
 router.post('/login', loginLimiter, authController.login);
 

@@ -156,8 +156,22 @@
       "ForgotPasswordRequest": {
         "type": "object",
         "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "jane@example.com"
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "required": [
           "email",
-          "resetUrl"
+          "otp",
+          "password"
         ],
         "properties": {
           "email": {
@@ -165,30 +179,49 @@
             "format": "email",
             "example": "jane@example.com"
           },
-          "resetUrl": {
+          "otp": {
             "type": "string",
-            "format": "uri",
-            "description": "Full frontend reset route — server appends `?token=` or `&token=`",
-            "example": "https://myapp.com/reset-password"
-          }
-        }
-      },
-      "ResetPasswordRequest": {
-        "type": "object",
-        "required": [
-          "token",
-          "password"
-        ],
-        "properties": {
-          "token": {
-            "type": "string",
-            "description": "Token from the reset link query string",
-            "example": "a1b2c3d4e5f6..."
+            "pattern": "^\\d{6}$",
+            "description": "6-digit code from the reset email",
+            "example": "123456"
           },
           "password": {
             "type": "string",
             "minLength": 8,
             "example": "Newpassword123!"
+          }
+        }
+      },
+      "VerifyEmailRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "otp"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "jane@example.com"
+          },
+          "otp": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "description": "6-digit code from the verification email",
+            "example": "123456"
+          }
+        }
+      },
+      "ResendVerificationRequest": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "jane@example.com"
           }
         }
       },
@@ -571,6 +604,17 @@
           "message": "Email is required from the social provider"
         }
       },
+      "ApiSocialEmailNotVerifiedError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Email not verified with the social provider"
+        }
+      },
       "ApiSocialProviderNotConfiguredError": {
         "allOf": [
           {
@@ -601,7 +645,18 @@
         ],
         "example": {
           "data": null,
-          "message": "Invalid or expired reset token"
+          "message": "Invalid or expired verification code"
+        }
+      },
+      "ApiEmailNotVerifiedError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Email not verified"
         }
       },
       "ApiInvalidRefreshTokenError": {
@@ -725,6 +780,28 @@
           "message": "Too many reset attempts, please try again later"
         }
       },
+      "ApiRateLimitVerifyEmailError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Too many verification attempts, please try again later"
+        }
+      },
+      "ApiRateLimitResendVerificationError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Too many resend verification attempts, please try again later"
+        }
+      },
       "ApiRateLimitRefreshError": {
         "allOf": [
           {
@@ -820,6 +897,7 @@
           "Auth"
         ],
         "summary": "Register a new user",
+        "description": "Creates the account with `emailVerified: false` and emails a 6-digit verification code.\nLogin is blocked until `POST /auth/verify-email` succeeds.\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -884,13 +962,142 @@
         }
       }
     },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Verify email with OTP",
+        "description": "Submit the 6-digit code from the registration email.\nReturns **400** for invalid or expired codes (max attempts enforced).\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponseMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or invalid/expired code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiValidationErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiInvalidResetTokenError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON body exceeds JSON_BODY_LIMIT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiJsonBodyTooLargeError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many verify-email attempts from this IP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiRateLimitVerifyEmailError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/resend-verification": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Resend email verification OTP",
+        "description": "Sends a new verification code when the email is registered and not yet verified.\nAlways returns the same success message to avoid email enumeration.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendVerificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generic success (sent if eligible)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponseMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON body exceeds JSON_BODY_LIMIT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiJsonBodyTooLargeError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many resend attempts from this IP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiRateLimitResendVerificationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "tags": [
           "Auth"
         ],
         "summary": "Log in with email or username",
-        "description": "Send a single `identifier` (email or username) and `password`.\nReturns a short-lived access JWT in `token` and a long-lived `refreshToken`.\nUse `token` as `Authorization: Bearer <token>` on protected routes.\nWhen `token` expires, call `POST /auth/refresh` with `refreshToken`.\nReturns **403** if the account `status` is `inactive`.\n",
+        "description": "Send a single `identifier` (email or username) and `password`.\nReturns a short-lived access JWT in `token` and a long-lived `refreshToken`.\nUse `token` as `Authorization: Bearer <token>` on protected routes.\nWhen `token` expires, call `POST /auth/refresh` with `refreshToken`.\nReturns **403** if the account `status` is `inactive`.\nReturns **403** if the email is not verified (`POST /auth/verify-email` required).\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -930,11 +1137,18 @@
             }
           },
           "403": {
-            "description": "Account is inactive",
+            "description": "Account is inactive or email not verified",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiInactiveAccountError"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiInactiveAccountError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiEmailNotVerifiedError"
+                    }
+                  ]
                 }
               }
             }
@@ -968,7 +1182,7 @@
           "Auth"
         ],
         "summary": "Log in with Google or Apple",
-        "description": "Exchange a provider `idToken` from Google Sign-In or Apple Sign-In for the same\ntoken pair returned by `POST /auth/login`.\n\n- New users are created automatically (username is generated).\n- If the provider email matches an existing account, the provider is linked to that account.\n- Returns **403** if the account `status` is `inactive`.\n",
+        "description": "Exchange a provider `idToken` from Google Sign-In or Apple Sign-In for the same\ntoken pair returned by `POST /auth/login`.\n\n- New users are created automatically (username is generated).\n- If the provider email matches an existing account, the provider is linked to that account.\n- New accounts and email linking require `emailVerified: true` from the provider (no separate app email flow).\n- Returning users are matched by `provider` + `providerId` and do not re-check email verification.\n- Returns **403** if the account `status` is `inactive`.\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -991,7 +1205,7 @@
             }
           },
           "400": {
-            "description": "Validation failed or provider did not return an email",
+            "description": "Validation failed, unverified provider email, or missing email",
             "content": {
               "application/json": {
                 "schema": {
@@ -1001,6 +1215,9 @@
                     },
                     {
                       "$ref": "#/components/schemas/ApiSocialEmailRequiredError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiSocialEmailNotVerifiedError"
                     }
                   ]
                 }
@@ -1207,8 +1424,8 @@
         "tags": [
           "Auth"
         ],
-        "summary": "Request a password reset link",
-        "description": "Send the user's email and the full frontend reset route (`resetUrl`).\nThe server appends `?token=...` (or `&token=...`) and emails the link.\nAlways returns the same success message to avoid email enumeration.\n",
+        "summary": "Request a password reset OTP",
+        "description": "Send the user's email. If the account has a password, a 6-digit reset code is emailed.\nAlways returns the same success message to avoid email enumeration.\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -1268,8 +1485,8 @@
         "tags": [
           "Auth"
         ],
-        "summary": "Set a new password with a reset token",
-        "description": "Use the `token` query param from the reset link emailed to the user.\nOn success, all refresh tokens for that user are revoked server-side.\nLog in separately with the new password to obtain a new token pair.\n",
+        "summary": "Set a new password with email and OTP",
+        "description": "Use the 6-digit code from the reset email together with the account email.\nOn success, all refresh tokens for that user are revoked server-side.\nLog in separately with the new password to obtain a new token pair.\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -1292,7 +1509,7 @@
             }
           },
           "400": {
-            "description": "Validation failed or invalid/expired token",
+            "description": "Validation failed or invalid/expired OTP",
             "content": {
               "application/json": {
                 "schema": {
@@ -1337,7 +1554,7 @@
           "Uploads"
         ],
         "summary": "Upload one or more files",
-        "description": "Multipart upload using field name `files` (repeat for multiple files).\nStorage backend is selected via `UPLOAD_DRIVER` (`local`, `s3`, `cloudinary`).\n",
+        "description": "Multipart upload using field name `files` (repeat for multiple files).\nStorage backend is selected via `UPLOAD_DRIVER` (`local`, `s3`, `cloudinary`).\nWhen `UPLOAD_PUBLIC_ACCESS=false`, response `url` values point to\n`GET /uploads/{id}/download` (JWT required).\n",
         "security": [
           {
             "bearerAuth": []
@@ -1407,6 +1624,81 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiFileTooLargeError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Upload rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiRateLimitUploadError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/{fileId}/download": {
+      "get": {
+        "tags": [
+          "Uploads"
+        ],
+        "summary": "Download an active uploaded file",
+        "description": "Streams an active file to the client. Requires a valid JWT.\nUsed when `UPLOAD_PUBLIC_ACCESS=false` (default in production).\nPass the file `id` from the upload response (recommended), or the stored `name`.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fileId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "File `id` from the upload response, or stored `name`"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File stream",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiAuthRequiredError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiInvalidTokenError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "File not found or archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNotFoundError"
                 }
               }
             }

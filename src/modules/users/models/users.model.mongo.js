@@ -23,8 +23,7 @@ const usersSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: false, select: false },
   authProviders: { type: [authProviderSchema], default: [] },
-  passwordResetToken: { type: String, select: false },
-  passwordResetExpiresAt: { type: Date, select: false },
+  emailVerified: { type: Boolean, default: false },
   bio: { type: String, required: false },
   // TODO: Add profile picture
   // profilePicture: { type: String, required: false },
@@ -55,8 +54,6 @@ usersSchema.index(
  */
 function stripSensitiveFields(_doc, ret) {
   delete ret.password;
-  delete ret.passwordResetToken;
-  delete ret.passwordResetExpiresAt;
   delete ret.authProviders;
   return ret;
 }

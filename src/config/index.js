@@ -31,8 +31,11 @@ const config = {
   get JWT_REFRESH_EXPIRES_IN() {
     return process.env.JWT_REFRESH_EXPIRES_IN || '7d';
   },
-  get passwordResetExpiresMinutes() {
-    return Number(process.env.PASSWORD_RESET_EXPIRES_MINUTES) || 60;
+  get otp() {
+    return {
+      expiresMinutes: Number(process.env.OTP_EXPIRES_MINUTES) || 10,
+      maxAttempts: Number(process.env.OTP_MAX_ATTEMPTS) || 5,
+    };
   },
   get cors() {
     return {
@@ -62,6 +65,17 @@ const config = {
       archivePrefix: process.env.UPLOAD_ARCHIVE_PREFIX || '_archive',
       allowedMimeTypes:
         allowedFromEnv.length > 0 ? allowedFromEnv : DEFAULT_ALLOWED_MIME_TYPES,
+      publicAccess: (() => {
+        if (process.env.UPLOAD_PUBLIC_ACCESS === 'true') {
+          return true;
+        }
+
+        if (process.env.UPLOAD_PUBLIC_ACCESS === 'false') {
+          return false;
+        }
+
+        return process.env.NODE_ENV !== 'production';
+      })(),
       local: {
         directory,
         archiveDirectory:
@@ -120,6 +134,17 @@ const config = {
           Number(process.env.RATE_LIMIT_RESET_PASSWORD_WINDOW_MS) ||
           authWindowMs,
         max: Number(process.env.RATE_LIMIT_RESET_PASSWORD_MAX) || 10,
+      },
+      verifyEmail: {
+        windowMs:
+          Number(process.env.RATE_LIMIT_VERIFY_EMAIL_WINDOW_MS) || authWindowMs,
+        max: Number(process.env.RATE_LIMIT_VERIFY_EMAIL_MAX) || 10,
+      },
+      resendVerification: {
+        windowMs:
+          Number(process.env.RATE_LIMIT_RESEND_VERIFICATION_WINDOW_MS) ||
+          authWindowMs,
+        max: Number(process.env.RATE_LIMIT_RESEND_VERIFICATION_MAX) || 5,
       },
       refresh: {
         windowMs:

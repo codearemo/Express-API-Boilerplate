@@ -6,8 +6,32 @@ async function register(req, res, next) {
     const user = await authService.register(req.body);
     sendSuccess(res, {
       statusCode: 201,
-      message: 'User registered successfully',
+      message:
+        'Registration successful. A verification code has been sent to your email.',
       data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function verifyEmail(req, res, next) {
+  try {
+    const user = await authService.verifyEmail(req.body);
+    sendSuccess(res, {
+      message: 'Email verified successfully',
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function resendVerification(req, res, next) {
+  try {
+    const result = await authService.resendVerification(req.body);
+    sendSuccess(res, {
+      message: result.message,
     });
   } catch (error) {
     next(error);
@@ -85,6 +109,8 @@ async function resetPassword(req, res, next) {
 
 module.exports = {
   register,
+  verifyEmail,
+  resendVerification,
   login,
   socialLogin,
   refresh,

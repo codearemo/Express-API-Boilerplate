@@ -47,6 +47,7 @@ describe('Social login API', () => {
       });
       expect(response.body.data.user.password).toBeUndefined();
       expect(response.body.data.user.authProviders).toBeUndefined();
+      expect(response.body.data.user.emailVerified).toBe(true);
     });
 
     it('returns tokens for an existing social user', async () => {
@@ -140,6 +141,45 @@ describe('Social login API', () => {
       expect(response.body.message).toBe(
         'Email is required from the social provider',
       );
+    });
+
+    it('returns 400 when the provider email is not verified for a new user', async () => {
+      setSocialTokenVerifierForTests(async () => ({
+        ...googleProfile,
+        emailVerified: false,
+      }));
+
+      const response = await request(app)
+        .post(`${API}/auth/social`)
+        .send({ provider: 'google', idToken: 'valid-google-token' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Email not verified with the social provider',
+      );
+    });
+
+    it('allows returning social users even if emailVerified is false in a later token', async () => {
+      setSocialTokenVerifierForTests(async () => ({
+        ...googleProfile,
+        emailVerified: true,
+      }));
+
+      await request(app)
+        .post(`${API}/auth/social`)
+        .send({ provider: 'google', idToken: 'valid-google-token' });
+
+      setSocialTokenVerifierForTests(async () => ({
+        ...googleProfile,
+        emailVerified: false,
+      }));
+
+      const response = await request(app)
+        .post(`${API}/auth/social`)
+        .send({ provider: 'google', idToken: 'valid-google-token' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.user.email).toBe('social@example.com');
     });
 
     it('returns 403 when the account is inactive', async () => {

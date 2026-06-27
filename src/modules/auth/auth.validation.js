@@ -1,10 +1,16 @@
 const { z } = require('zod');
 const { SUPPORTED_SOCIAL_PROVIDERS } = require('../../constants/social-auth');
+const { normalizeEmail } = require('../../utils/normalize-email');
 
-const emailField = z.pipe(
-  z.string({ error: 'Email is required' }).trim().min(1, 'Email is required'),
-  z.email('Invalid email address'),
-);
+const emailField = z
+  .string({ error: 'Email is required' })
+  .trim()
+  .min(1, 'Email is required')
+  .transform(normalizeEmail)
+  .refine(
+    (value) => z.email().safeParse(value).success,
+    'Invalid email address',
+  );
 
 const passwordField = z
   .string({ error: 'Password is required' })
@@ -42,23 +48,28 @@ const loginSchema = z.object({
     .min(1, 'Password is required'),
 });
 
+const otpField = z
+  .string({ error: 'Verification code is required' })
+  .trim()
+  .regex(/^\d{6}$/, 'Verification code must be 6 digits');
+
 const forgotPasswordSchema = z.object({
   email: emailField,
-  resetUrl: z.pipe(
-    z
-      .string({ error: 'Reset URL is required' })
-      .trim()
-      .min(1, 'Reset URL is required'),
-    z.url('Reset URL must be a valid URL'),
-  ),
 });
 
 const resetPasswordSchema = z.object({
-  token: z
-    .string({ error: 'Reset token is required' })
-    .trim()
-    .min(1, 'Reset token is required'),
+  email: emailField,
+  otp: otpField,
   password: passwordField,
+});
+
+const verifyEmailSchema = z.object({
+  email: emailField,
+  otp: otpField,
+});
+
+const resendVerificationSchema = z.object({
+  email: emailField,
 });
 
 const refreshTokenSchema = z.object({
@@ -135,6 +146,26 @@ function validateResetPassword(body) {
   return result.data;
 }
 
+function validateVerifyEmail(body) {
+  const result = verifyEmailSchema.safeParse(body);
+
+  if (!result.success) {
+    throw formatZodError(result.error);
+  }
+
+  return result.data;
+}
+
+function validateResendVerification(body) {
+  const result = resendVerificationSchema.safeParse(body);
+
+  if (!result.success) {
+    throw formatZodError(result.error);
+  }
+
+  return result.data;
+}
+
 function validateRefreshToken(body) {
   const result = refreshTokenSchema.safeParse(body);
 
@@ -160,6 +191,8 @@ module.exports = {
   validateLogin,
   validateForgotPassword,
   validateResetPassword,
+  validateVerifyEmail,
+  validateResendVerification,
   validateRefreshToken,
   validateSocialLogin,
   isEmail,

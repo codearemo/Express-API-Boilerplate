@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../../src/app');
-const { validRegisterPayload, VALID_PASSWORD } = require('../helpers');
+const { validRegisterPayload, VALID_PASSWORD, verifyRegisteredUser } = require('../helpers');
 
 const API = '/api/v1';
 
@@ -8,6 +8,8 @@ async function loginAndGetTokens() {
   await request(app)
     .post(`${API}/auth/register`)
     .send(validRegisterPayload());
+
+  await verifyRegisteredUser(app);
 
   const response = await request(app)
     .post(`${API}/auth/login`)
@@ -136,23 +138,22 @@ describe('Refresh token API', () => {
 
   describe('POST /auth/reset-password', () => {
     it('revokes existing refresh tokens after a password reset', async () => {
-      const { sentResetLinks } = require('../../src/utils/mail');
-      sentResetLinks.length = 0;
+      const { sentOtps } = require('../../src/utils/mail');
+      const { OTP_PURPOSES } = require('../../src/constants/otp');
+      const { getLatestOtp } = require('../helpers');
+      sentOtps.length = 0;
 
       const { refreshToken } = await loginAndGetTokens();
 
       await request(app)
         .post(`${API}/auth/forgot-password`)
-        .send({
-          email: 'jane@example.com',
-          resetUrl: 'https://myapp.com/reset-password',
-        });
+        .send({ email: 'jane@example.com' });
 
-      const token = new URL(sentResetLinks[0]).searchParams.get('token');
+      const otp = getLatestOtp('jane@example.com', OTP_PURPOSES.RESET_PASSWORD);
 
       await request(app)
         .post(`${API}/auth/reset-password`)
-        .send({ token, password: 'Newpassword123!' });
+        .send({ email: 'jane@example.com', otp, password: 'Newpassword123!' });
 
       const refreshResponse = await request(app)
         .post(`${API}/auth/refresh`)

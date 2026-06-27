@@ -10,26 +10,26 @@ const {
   validateLogin,
   validateForgotPassword,
   validateResetPassword,
+  validateVerifyEmail,
+  validateResendVerification,
   validateRefreshToken,
   validateSocialLogin,
   isEmail,
 } = require('./auth.validation');
 const { signAccessToken } = require('./auth.token');
-const { assertUserIsActive } = require('./auth.utils');
-const {
-  generatePasswordResetToken,
-  buildResetUrl,
-  hashPasswordResetToken,
-} = require('../../utils/password-reset');
-const { sendPasswordResetEmail } = require('../../utils/mail');
+const { assertUserIsActive, assertEmailVerified } = require('./auth.utils');
+const { issueOtp, verifyOtp } = require('./otp.service');
+const { OTP_PURPOSES } = require('../../constants/otp');
 const { mapMongoDuplicateKeyError } = require('../../utils/mongo-errors');
 const { verifySocialToken } = require('../../utils/social-auth');
 const { generateSocialUsername } = require('../../utils/social-username');
-const config = require('../../config');
+const { normalizeEmail } = require('../../utils/normalize-email');
 const bcrypt = require('bcrypt');
 
 const FORGOT_PASSWORD_MESSAGE =
-  'If that email is registered, a password reset link has been sent.';
+  'If that email is registered, a verification code has been sent.';
+const RESEND_VERIFICATION_MESSAGE =
+  'If that email is registered and not yet verified, a verification code has been sent.';
 
 async function issueAuthTokens(user) {
   const refreshToken = await refreshTokensRepository.createForUser(user._id);
@@ -70,20 +70,70 @@ async function register(body) {
     user = await usersRepository.create({
       ...payload,
       password: await bcrypt.hash(payload.password, 10),
+      emailVerified: false,
     });
   } catch (error) {
     throw mapMongoDuplicateKeyError(error);
   }
 
+  try {
+    await issueOtp(payload.email, OTP_PURPOSES.VERIFY_EMAIL);
+  } catch (error) {
+    console.error('[auth] Failed to send verification email:', error.message);
+  }
+
   return toPublicUser(user);
+}
+
+async function verifyEmail(body) {
+  const { email, otp } = validateVerifyEmail(body);
+  const user = await usersRepository.findByEmail(email);
+
+  if (!user) {
+    const error = new Error('Invalid or expired verification code');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (user.emailVerified) {
+    const error = new Error('Email is already verified');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  await verifyOtp(email, OTP_PURPOSES.VERIFY_EMAIL, otp);
+  await usersRepository.markEmailVerified(user._id);
+
+  return toPublicUser(await usersRepository.findById(user._id));
+}
+
+async function resendVerification(body) {
+  const { email } = validateResendVerification(body);
+  const user = await usersRepository.findByEmail(email);
+
+  if (user && !user.emailVerified) {
+    try {
+      await issueOtp(email, OTP_PURPOSES.VERIFY_EMAIL);
+    } catch (error) {
+      console.error(
+        '[auth] Failed to resend verification email:',
+        error.message,
+      );
+    }
+  }
+
+  return { message: RESEND_VERIFICATION_MESSAGE };
 }
 
 async function login(body) {
   const { identifier, password } = validateLogin(body);
+  const normalizedIdentifier = isEmail(identifier)
+    ? normalizeEmail(identifier)
+    : identifier.trim();
 
   const user = isEmail(identifier)
-    ? await usersRepository.findByEmailWithPassword(identifier)
-    : await usersRepository.findByUsernameWithPassword(identifier);
+    ? await usersRepository.findByEmailWithPassword(normalizedIdentifier)
+    : await usersRepository.findByUsernameWithPassword(normalizedIdentifier);
 
   if (!user) {
     const error = new Error('Invalid credentials');
@@ -106,6 +156,7 @@ async function login(body) {
   }
 
   assertUserIsActive(user);
+  assertEmailVerified(user);
 
   const tokens = await issueAuthTokens(user);
 
@@ -135,6 +186,7 @@ async function refresh(body) {
   }
 
   assertUserIsActive(user);
+  assertEmailVerified(user);
 
   return issueAuthTokens(user);
 }
@@ -163,6 +215,7 @@ async function createSocialUser(profile) {
       lastName: profile.lastName || 'User',
       email: profile.email,
       username,
+      emailVerified: true,
       authProviders: [
         { provider: profile.provider, providerId: profile.providerId },
       ],
@@ -188,6 +241,12 @@ async function socialLogin(body) {
   );
 
   if (!user) {
+    if (!profile.emailVerified) {
+      const error = new Error('Email not verified with the social provider');
+      error.statusCode = 400;
+      throw error;
+    }
+
     const existingByEmail = await usersRepository.findByEmail(profile.email);
 
     if (existingByEmail) {
@@ -196,6 +255,11 @@ async function socialLogin(body) {
         profile.provider,
         profile.providerId,
       );
+
+      if (!existingByEmail.emailVerified) {
+        await usersRepository.markEmailVerified(existingByEmail._id);
+      }
+
       user = await usersRepository.findById(existingByEmail._id);
     } else {
       user = await createSocialUser(profile);
@@ -213,27 +277,12 @@ async function socialLogin(body) {
 }
 
 async function forgotPassword(body) {
-  const { email, resetUrl } = validateForgotPassword(body);
+  const { email } = validateForgotPassword(body);
+  const user = await usersRepository.findByEmailWithPassword(email);
 
-  const user = await usersRepository.findByEmail(email);
-
-  if (user) {
-    const rawToken = generatePasswordResetToken();
-    const hashedToken = hashPasswordResetToken(rawToken);
-    const expiresAt = new Date(
-      Date.now() + config.passwordResetExpiresMinutes * 60 * 1000,
-    );
-
-    await usersRepository.setPasswordResetToken(
-      user._id,
-      hashedToken,
-      expiresAt,
-    );
-
-    const resetLink = buildResetUrl(resetUrl, rawToken);
-
+  if (user?.password) {
     try {
-      await sendPasswordResetEmail({ to: email, resetLink });
+      await issueOtp(email, OTP_PURPOSES.RESET_PASSWORD);
     } catch (error) {
       console.error(
         '[auth] Failed to send password reset email:',
@@ -246,17 +295,18 @@ async function forgotPassword(body) {
 }
 
 async function resetPassword(body) {
-  const { token, password } = validateResetPassword(body);
+  const { email, otp, password } = validateResetPassword(body);
+  const user = await usersRepository.findByEmailWithPassword(email);
 
-  const user = await usersRepository.findByValidPasswordResetToken(token);
-
-  if (!user) {
-    const error = new Error('Invalid or expired reset token');
+  if (!user?.password) {
+    const error = new Error('Invalid or expired verification code');
     error.statusCode = 400;
     throw error;
   }
 
-  await usersRepository.updatePasswordAndClearResetToken(
+  await verifyOtp(email, OTP_PURPOSES.RESET_PASSWORD, otp);
+
+  await usersRepository.updatePassword(
     user._id,
     await bcrypt.hash(password, 10),
   );
@@ -266,6 +316,8 @@ async function resetPassword(body) {
 
 module.exports = {
   register,
+  verifyEmail,
+  resendVerification,
   login,
   socialLogin,
   refresh,
