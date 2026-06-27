@@ -35,6 +35,7 @@ const {
   resetPassword,
   refresh,
   logout,
+  socialLogin,
   upload,
 } = config.rateLimit;
 
@@ -80,6 +81,12 @@ const logoutLimiter = createRateLimiter({
   message: 'Too many logout attempts, please try again later',
 });
 
+const socialLoginLimiter = createRateLimiter({
+  limit: socialLogin.max,
+  windowMs: socialLogin.windowMs,
+  message: 'Too many social login attempts, please try again later',
+});
+
 const uploadLimiter = createRateLimiter({
   limit: upload.max,
   windowMs: upload.windowMs,
@@ -95,5 +102,6 @@ module.exports = {
   resetPasswordLimiter,
   refreshLimiter,
   logoutLimiter,
+  socialLoginLimiter,
   uploadLimiter,
 };

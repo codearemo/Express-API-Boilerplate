@@ -131,6 +131,11 @@ const config = {
           Number(process.env.RATE_LIMIT_LOGOUT_WINDOW_MS) || authWindowMs,
         max: Number(process.env.RATE_LIMIT_LOGOUT_MAX) || 20,
       },
+      socialLogin: {
+        windowMs:
+          Number(process.env.RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS) || authWindowMs,
+        max: Number(process.env.RATE_LIMIT_SOCIAL_LOGIN_MAX) || 10,
+      },
       upload: {
         windowMs:
           Number(process.env.RATE_LIMIT_UPLOAD_WINDOW_MS) || authWindowMs,
@@ -155,6 +160,16 @@ const config = {
   get mongo() {
     return {
       uri: process.env.MONGO_URI || 'mongodb://localhost:27017/feed-app',
+    };
+  },
+  get social() {
+    return {
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+      },
+      apple: {
+        clientId: process.env.APPLE_CLIENT_ID,
+      },
     };
   },
   get sql() {

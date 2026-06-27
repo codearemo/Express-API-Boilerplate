@@ -152,6 +152,24 @@ const options = {
             },
           },
         },
+        SocialLoginRequest: {
+          type: 'object',
+          required: ['provider', 'idToken'],
+          properties: {
+            provider: {
+              type: 'string',
+              enum: ['google', 'apple'],
+              description: 'Social identity provider',
+              example: 'google',
+            },
+            idToken: {
+              type: 'string',
+              description:
+                'ID token from the provider SDK (Google Sign-In or Apple Sign-In)',
+              example: 'eyJhbGciOiJSUzI1NiIs...',
+            },
+          },
+        },
         AuthTokens: {
           type: 'object',
           properties: {
@@ -368,6 +386,34 @@ const options = {
             message: 'Invalid credentials',
           },
         },
+        ApiSocialLoginError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'This account uses social login',
+          },
+        },
+        ApiInvalidSocialTokenError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Invalid or expired social token',
+          },
+        },
+        ApiSocialEmailRequiredError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Email is required from the social provider',
+          },
+        },
+        ApiSocialProviderNotConfiguredError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Google sign-in is not configured',
+          },
+        },
         ApiInactiveAccountError: {
           allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
           example: {
@@ -471,6 +517,13 @@ const options = {
           example: {
             data: null,
             message: 'Too many logout attempts, please try again later',
+          },
+        },
+        ApiRateLimitSocialLoginError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Too many social login attempts, please try again later',
           },
         },
         ApiRateLimitUploadError: {

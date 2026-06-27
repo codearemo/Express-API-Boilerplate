@@ -1,10 +1,8 @@
 const { z } = require('zod');
+const { SUPPORTED_SOCIAL_PROVIDERS } = require('../../constants/social-auth');
 
 const emailField = z.pipe(
-  z
-    .string({ error: 'Email is required' })
-    .trim()
-    .min(1, 'Email is required'),
+  z.string({ error: 'Email is required' }).trim().min(1, 'Email is required'),
   z.email('Invalid email address'),
 );
 
@@ -68,6 +66,16 @@ const refreshTokenSchema = z.object({
     .string({ error: 'Refresh token is required' })
     .trim()
     .min(1, 'Refresh token is required'),
+});
+
+const socialLoginSchema = z.object({
+  provider: z.enum(SUPPORTED_SOCIAL_PROVIDERS, {
+    error: 'Provider must be google or apple',
+  }),
+  idToken: z
+    .string({ error: 'ID token is required' })
+    .trim()
+    .min(1, 'ID token is required'),
 });
 
 function isEmail(value) {
@@ -137,11 +145,22 @@ function validateRefreshToken(body) {
   return result.data;
 }
 
+function validateSocialLogin(body) {
+  const result = socialLoginSchema.safeParse(body);
+
+  if (!result.success) {
+    throw formatZodError(result.error);
+  }
+
+  return result.data;
+}
+
 module.exports = {
   validateRegister,
   validateLogin,
   validateForgotPassword,
   validateResetPassword,
   validateRefreshToken,
+  validateSocialLogin,
   isEmail,
 };

@@ -7,7 +7,7 @@ REST API for a social feed application. Built with Express and a layered archite
 ## Features
 
 - **Versioned API** — all routes under `/api/v1`
-- **Auth** — register, login (email or username via single `identifier` field), forgot/reset password, JWT access + refresh tokens
+- **Auth** — register, login (email or username via single `identifier` field), social login (Google, Apple), forgot/reset password, JWT access + refresh tokens
 - **Users** — protected profile endpoint (`GET /users/me`)
 - **Uploads** — multipart upload (`POST /uploads`) with switchable storage: `local`, `s3`, or `cloudinary`
 - **Validation** — Zod schemas with field-level error `details`
@@ -111,6 +111,10 @@ JWT_SECRET=your-long-random-secret
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 
+# Social login — client IDs from Google Cloud / Apple Developer
+GOOGLE_CLIENT_ID=
+APPLE_CLIENT_ID=
+
 # CORS — comma-separated list of allowed browser origins
 ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 
@@ -155,6 +159,8 @@ RATE_LIMIT_REFRESH_MAX=20
 RATE_LIMIT_REFRESH_WINDOW_MS=300000
 RATE_LIMIT_LOGOUT_MAX=20
 RATE_LIMIT_LOGOUT_WINDOW_MS=300000
+RATE_LIMIT_SOCIAL_LOGIN_MAX=10
+RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS=300000
 ```
 
 | Variable | Required | Description |
@@ -163,6 +169,8 @@ RATE_LIMIT_LOGOUT_WINDOW_MS=300000
 | `JWT_SECRET` | Yes | Secret for signing JWTs |
 | `JWT_EXPIRES_IN` | No | Access token expiry (default: `15m`) |
 | `JWT_REFRESH_EXPIRES_IN` | No | Refresh token expiry (default: `7d`) |
+| `GOOGLE_CLIENT_ID` | No* | Google OAuth client ID for `POST /auth/social` with `provider: google` |
+| `APPLE_CLIENT_ID` | No* | Apple Services ID for `POST /auth/social` with `provider: apple` |
 | `ALLOWED_ORIGINS` | No | Comma-separated frontend URLs for CORS — required before a browser app can call the API cross-origin |
 | `JSON_BODY_LIMIT` | No | Max JSON body size (default: `10kb`) |
 | `DB_DRIVER` | No | `mongo` or `sql` (default: `mongo`) |
@@ -189,6 +197,8 @@ RATE_LIMIT_LOGOUT_WINDOW_MS=300000
 | `RATE_LIMIT_REFRESH_WINDOW_MS` | No | Refresh window in ms (default: `300000` = 5 min) |
 | `RATE_LIMIT_LOGOUT_MAX` | No | Max logout requests per IP (default: `20`) |
 | `RATE_LIMIT_LOGOUT_WINDOW_MS` | No | Logout window in ms (default: `300000` = 5 min) |
+| `RATE_LIMIT_SOCIAL_LOGIN_MAX` | No | Max social login requests per IP (default: `10`) |
+| `RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS` | No | Social login window in ms (default: `300000` = 5 min) |
 | `UPLOAD_DRIVER` | No | Storage backend: `local`, `s3`, or `cloudinary` (default: `local`) |
 | `UPLOAD_MAX_FILE_SIZE` | No | Max bytes per file (default: `5242880` = 5MB) |
 | `UPLOAD_MAX_FILES` | No | Max files per request (default: `10`) |
@@ -239,6 +249,7 @@ Interactive docs: [http://localhost:3003/api-docs](http://localhost:3003/api-doc
 | `GET` | `/health` | No | Health check (includes MongoDB ping; **503** if DB unavailable) |
 | `POST` | `/api/v1/auth/register` | No | Create a new user |
 | `POST` | `/api/v1/auth/login` | No | Login — returns access `token` + `refreshToken` |
+| `POST` | `/api/v1/auth/social` | No | Social login (Google or Apple `idToken`) |
 | `POST` | `/api/v1/auth/refresh` | No | Exchange `refreshToken` for a new token pair |
 | `POST` | `/api/v1/auth/logout` | No | Revoke a `refreshToken` |
 | `POST` | `/api/v1/auth/forgot-password` | No | Email a password reset link |
@@ -298,6 +309,26 @@ Send the access token on protected routes:
 ```http
 Authorization: Bearer <token>
 ```
+
+### Social login
+
+The client obtains an `idToken` from the Google or Apple SDK, then exchanges it for the same token pair as password login:
+
+```http
+POST /api/v1/auth/social
+Content-Type: application/json
+
+{
+  "provider": "google",
+  "idToken": "<idToken from Google Sign-In>"
+}
+```
+
+Supported `provider` values: `google`, `apple`.
+
+- New users get an auto-generated username (`user_<hex>`).
+- If the provider email matches an existing account, the provider is linked to that account.
+- Social-only accounts cannot use password login (`400` — `This account uses social login`).
 
 When the access token expires, exchange the refresh token:
 
@@ -510,6 +541,7 @@ Every request passes a **global** per-IP limit first. Auth routes also have **st
 | **Global** (all routes) | 200 requests | 15 minutes |
 | `POST /auth/register` | 10 requests | 5 minutes |
 | `POST /auth/login` | 10 requests | 5 minutes |
+| `POST /auth/social` | 10 requests | 5 minutes |
 | `POST /auth/forgot-password` | 5 requests | 5 minutes |
 | `POST /auth/reset-password` | 10 requests | 5 minutes |
 | `POST /auth/refresh` | 20 requests | 5 minutes |

@@ -130,6 +130,72 @@
 
 /**
  * @openapi
+ * /api/v1/auth/social:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Log in with Google or Apple
+ *     description: |
+ *       Exchange a provider `idToken` from Google Sign-In or Apple Sign-In for the same
+ *       token pair returned by `POST /auth/login`.
+ *
+ *       - New users are created automatically (username is generated).
+ *       - If the provider email matches an existing account, the provider is linked to that account.
+ *       - Returns **403** if the account `status` is `inactive`.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SocialLoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponseLogin'
+ *       400:
+ *         description: Validation failed or provider did not return an email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiValidationErrorResponse'
+ *                 - $ref: '#/components/schemas/ApiSocialEmailRequiredError'
+ *       401:
+ *         description: Invalid or expired social token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiInvalidSocialTokenError'
+ *       403:
+ *         description: Account is inactive
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiInactiveAccountError'
+ *       429:
+ *         description: Too many social login attempts from this IP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiRateLimitSocialLoginError'
+ *       503:
+ *         description: Social provider is not configured on the server
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiSocialProviderNotConfiguredError'
+ *       413:
+ *         description: JSON body exceeds JSON_BODY_LIMIT
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiJsonBodyTooLargeError'
+ */
+
+/**
+ * @openapi
  * /api/v1/auth/refresh:
  *   post:
  *     tags: [Auth]

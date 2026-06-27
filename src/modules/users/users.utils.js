@@ -21,6 +21,7 @@ function toPublicUser(user) {
     password: _password,
     passwordResetToken: _passwordResetToken,
     passwordResetExpiresAt: _passwordResetExpiresAt,
+    authProviders: _authProviders,
     ...publicUser
   } = user;
   return publicUser;

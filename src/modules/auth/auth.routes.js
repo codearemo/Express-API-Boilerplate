@@ -3,6 +3,7 @@ const authController = require('./auth.controller');
 const {
   registerLimiter,
   loginLimiter,
+  socialLoginLimiter,
   forgotPasswordLimiter,
   resetPasswordLimiter,
   refreshLimiter,
@@ -14,6 +15,8 @@ const router = express.Router();
 router.post('/register', registerLimiter, authController.register);
 
 router.post('/login', loginLimiter, authController.login);
+
+router.post('/social', socialLoginLimiter, authController.socialLogin);
 
 router.post('/refresh', refreshLimiter, authController.refresh);
 

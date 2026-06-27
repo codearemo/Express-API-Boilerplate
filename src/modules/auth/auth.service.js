@@ -11,6 +11,7 @@ const {
   validateForgotPassword,
   validateResetPassword,
   validateRefreshToken,
+  validateSocialLogin,
   isEmail,
 } = require('./auth.validation');
 const { signAccessToken } = require('./auth.token');
@@ -22,6 +23,8 @@ const {
 } = require('../../utils/password-reset');
 const { sendPasswordResetEmail } = require('../../utils/mail');
 const { mapMongoDuplicateKeyError } = require('../../utils/mongo-errors');
+const { verifySocialToken } = require('../../utils/social-auth');
+const { generateSocialUsername } = require('../../utils/social-username');
 const config = require('../../config');
 const bcrypt = require('bcrypt');
 
@@ -88,6 +91,12 @@ async function login(body) {
     throw error;
   }
 
+  if (!user.password) {
+    const error = new Error('This account uses social login');
+    error.statusCode = 400;
+    throw error;
+  }
+
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
@@ -133,6 +142,74 @@ async function refresh(body) {
 async function logout(body) {
   const { refreshToken } = validateRefreshToken(body);
   await refreshTokensRepository.revokeByRawToken(refreshToken);
+}
+
+async function createSocialUser(profile) {
+  let username = generateSocialUsername();
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const taken = await usersRepository.findByUsername(username);
+
+    if (!taken) {
+      break;
+    }
+
+    username = generateSocialUsername();
+  }
+
+  try {
+    return await usersRepository.create({
+      firstName: profile.firstName,
+      lastName: profile.lastName || 'User',
+      email: profile.email,
+      username,
+      authProviders: [
+        { provider: profile.provider, providerId: profile.providerId },
+      ],
+    });
+  } catch (error) {
+    throw mapMongoDuplicateKeyError(error);
+  }
+}
+
+async function socialLogin(body) {
+  const { provider, idToken } = validateSocialLogin(body);
+  const profile = await verifySocialToken(provider, idToken);
+
+  if (!profile.email) {
+    const error = new Error('Email is required from the social provider');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  let user = await usersRepository.findByAuthProvider(
+    profile.provider,
+    profile.providerId,
+  );
+
+  if (!user) {
+    const existingByEmail = await usersRepository.findByEmail(profile.email);
+
+    if (existingByEmail) {
+      await usersRepository.addAuthProvider(
+        existingByEmail._id,
+        profile.provider,
+        profile.providerId,
+      );
+      user = await usersRepository.findById(existingByEmail._id);
+    } else {
+      user = await createSocialUser(profile);
+    }
+  }
+
+  assertUserIsActive(user);
+
+  const tokens = await issueAuthTokens(user);
+
+  return {
+    user: toPublicUser(user),
+    ...tokens,
+  };
 }
 
 async function forgotPassword(body) {
@@ -190,6 +267,7 @@ async function resetPassword(body) {
 module.exports = {
   register,
   login,
+  socialLogin,
   refresh,
   logout,
   forgotPassword,

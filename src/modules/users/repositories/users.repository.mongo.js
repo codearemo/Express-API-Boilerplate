@@ -71,6 +71,21 @@ async function updatePasswordAndClearResetToken(userId, hashedPassword) {
   });
 }
 
+async function findByAuthProvider(provider, providerId) {
+  const doc = await UsersModel.findOne({
+    authProviders: { $elemMatch: { provider, providerId } },
+  }).lean();
+
+  return doc;
+}
+
+async function addAuthProvider(userId, provider, providerId) {
+  await UsersModel.findByIdAndUpdate(userId, {
+    $addToSet: { authProviders: { provider, providerId } },
+    updatedAt: new Date(),
+  });
+}
+
 module.exports = {
   create,
   findById,
@@ -81,4 +96,6 @@ module.exports = {
   setPasswordResetToken,
   findByValidPasswordResetToken,
   updatePasswordAndClearResetToken,
+  findByAuthProvider,
+  addAuthProvider,
 };

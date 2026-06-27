@@ -26,6 +26,18 @@ async function login(req, res, next) {
   }
 }
 
+async function socialLogin(req, res, next) {
+  try {
+    const result = await authService.socialLogin(req.body);
+    sendSuccess(res, {
+      message: 'Login successful',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function refresh(req, res, next) {
   try {
     const tokens = await authService.refresh(req.body);
@@ -74,6 +86,7 @@ async function resetPassword(req, res, next) {
 module.exports = {
   register,
   login,
+  socialLogin,
   refresh,
   logout,
   forgotPassword,

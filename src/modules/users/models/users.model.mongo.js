@@ -1,4 +1,19 @@
 const mongoose = require('mongoose');
+const {
+  SUPPORTED_SOCIAL_PROVIDERS,
+} = require('../../../constants/social-auth');
+
+const authProviderSchema = new mongoose.Schema(
+  {
+    provider: {
+      type: String,
+      enum: SUPPORTED_SOCIAL_PROVIDERS,
+      required: true,
+    },
+    providerId: { type: String, required: true },
+  },
+  { _id: false },
+);
 
 // Define the users schema
 const usersSchema = new mongoose.Schema({
@@ -6,7 +21,8 @@ const usersSchema = new mongoose.Schema({
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true, select: false },
+  password: { type: String, required: false, select: false },
+  authProviders: { type: [authProviderSchema], default: [] },
   passwordResetToken: { type: String, select: false },
   passwordResetExpiresAt: { type: Date, select: false },
   bio: { type: String, required: false },
@@ -19,6 +35,11 @@ const usersSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
+
+usersSchema.index(
+  { 'authProviders.provider': 1, 'authProviders.providerId': 1 },
+  { unique: true, sparse: true },
+);
 
 /**
  * Custom transform function to remove sensitive fields (like password)
@@ -36,6 +57,7 @@ function stripSensitiveFields(_doc, ret) {
   delete ret.password;
   delete ret.passwordResetToken;
   delete ret.passwordResetExpiresAt;
+  delete ret.authProviders;
   return ret;
 }
 

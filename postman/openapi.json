@@ -205,6 +205,29 @@
           }
         }
       },
+      "SocialLoginRequest": {
+        "type": "object",
+        "required": [
+          "provider",
+          "idToken"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "google",
+              "apple"
+            ],
+            "description": "Social identity provider",
+            "example": "google"
+          },
+          "idToken": {
+            "type": "string",
+            "description": "ID token from the provider SDK (Google Sign-In or Apple Sign-In)",
+            "example": "eyJhbGciOiJSUzI1NiIs..."
+          }
+        }
+      },
       "AuthTokens": {
         "type": "object",
         "properties": {
@@ -515,6 +538,50 @@
           "message": "Invalid credentials"
         }
       },
+      "ApiSocialLoginError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "This account uses social login"
+        }
+      },
+      "ApiInvalidSocialTokenError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Invalid or expired social token"
+        }
+      },
+      "ApiSocialEmailRequiredError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Email is required from the social provider"
+        }
+      },
+      "ApiSocialProviderNotConfiguredError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Google sign-in is not configured"
+        }
+      },
       "ApiInactiveAccountError": {
         "allOf": [
           {
@@ -678,6 +745,17 @@
         "example": {
           "data": null,
           "message": "Too many logout attempts, please try again later"
+        }
+      },
+      "ApiRateLimitSocialLoginError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Too many social login attempts, please try again later"
         }
       },
       "ApiRateLimitUploadError": {
@@ -877,6 +955,104 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiRateLimitLoginError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/social": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Log in with Google or Apple",
+        "description": "Exchange a provider `idToken` from Google Sign-In or Apple Sign-In for the same\ntoken pair returned by `POST /auth/login`.\n\n- New users are created automatically (username is generated).\n- If the provider email matches an existing account, the provider is linked to that account.\n- Returns **403** if the account `status` is `inactive`.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponseLogin"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or provider did not return an email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiValidationErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiSocialEmailRequiredError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired social token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiInvalidSocialTokenError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Account is inactive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiInactiveAccountError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON body exceeds JSON_BODY_LIMIT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiJsonBodyTooLargeError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many social login attempts from this IP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiRateLimitSocialLoginError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Social provider is not configured on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSocialProviderNotConfiguredError"
                 }
               }
             }
