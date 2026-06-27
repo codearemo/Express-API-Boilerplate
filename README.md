@@ -312,10 +312,24 @@ Import both JSON files into Postman, or import directly from `http://localhost:3
 | `npm run format` | Format code with Prettier |
 | `npm run format:check` | Check formatting without writing |
 | `npm run postman:build` | Generate Postman collection from OpenAPI |
+| `npm test` | Run integration tests (Vitest + Supertest) |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run check` | Run `lint:fix`, `format`, `test`, and `postman:build` in sequence |
 
 ---
 
-## Development Conventions
+## Testing
+
+Integration tests use **Vitest** + **Supertest** with an in-memory MongoDB (`mongodb-memory-server`). Tests never touch your dev database.
+
+```bash
+npm test           # run once
+npm run test:watch # re-run on file changes
+```
+
+Tests live in `tests/` and cover register, login, validation errors, and protected `/users/me`.
+
+---
 
 ### Module layout
 

@@ -2,23 +2,34 @@
 // CONFIGURE THE SERVER
 // ******************************************************
 
-// Configure the server with the environment variables
+// Getters read process.env at access time (allows tests to override before connect)
 const config = {
-  port: Number(process.env.PORT) || 3000,
-  dbDriver: process.env.DB_DRIVER || 'mongo',
-  // Used to sign and verify JWTs (set a long random string in .env)
-  JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-  mongo: {
-    uri: process.env.MONGO_URI || 'mongodb://localhost:27017/feed-app',
+  get port() {
+    return Number(process.env.PORT) || 3000;
   },
-  sql: {
-    dialect: process.env.SQL_DIALECT || 'mysql',
-    host: process.env.SQL_HOST || 'localhost',
-    port: Number(process.env.SQL_PORT) || 3306,
-    database: process.env.SQL_DATABASE || 'feed_app',
-    user: process.env.SQL_USER || 'root',
-    password: process.env.SQL_PASSWORD || '',
+  get dbDriver() {
+    return process.env.DB_DRIVER || 'mongo';
+  },
+  get JWT_SECRET() {
+    return process.env.JWT_SECRET;
+  },
+  get JWT_EXPIRES_IN() {
+    return process.env.JWT_EXPIRES_IN || '7d';
+  },
+  get mongo() {
+    return {
+      uri: process.env.MONGO_URI || 'mongodb://localhost:27017/feed-app',
+    };
+  },
+  get sql() {
+    return {
+      dialect: process.env.SQL_DIALECT || 'mysql',
+      host: process.env.SQL_HOST || 'localhost',
+      port: Number(process.env.SQL_PORT) || 3306,
+      database: process.env.SQL_DATABASE || 'feed_app',
+      user: process.env.SQL_USER || 'root',
+      password: process.env.SQL_PASSWORD || '',
+    };
   },
 };
 

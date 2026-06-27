@@ -4,7 +4,7 @@ const prettierConfig = require('eslint-config-prettier');
 
 module.exports = [
   {
-    ignores: ['node_modules/**', 'eslint.config.js'],
+    ignores: ['node_modules/**', 'eslint.config.js', 'vitest.config.js'],
   },
   js.configs.recommended,
   pluginN.configs['flat/recommended-script'],
@@ -34,6 +34,23 @@ module.exports = [
     rules: {
       'no-console': 'off',
       'n/no-process-exit': 'off',
+      'n/no-unpublished-require': 'off',
+    },
+  },
+  {
+    files: ['tests/**/*.js'],
+    languageOptions: {
+      globals: {
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        afterEach: 'readonly',
+        beforeEach: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+      },
+    },
+    rules: {
       'n/no-unpublished-require': 'off',
     },
   },

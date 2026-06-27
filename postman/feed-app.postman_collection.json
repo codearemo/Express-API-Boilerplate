@@ -1,7 +1,7 @@
 {
   "item": [
     {
-      "id": "0571cbd4-0dd7-4b99-a604-6e6d1f1a04ee",
+      "id": "f6511dc0-730e-44c3-ad4c-ca46973b0e9d",
       "name": "Health check",
       "request": {
         "name": "Health check",
@@ -30,7 +30,7 @@
       },
       "response": [
         {
-          "id": "d610201a-143d-4b88-a1fb-1b2f3e383d53",
+          "id": "66c488d4-66a9-407b-a410-f96266cc96ec",
           "name": "Server is healthy",
           "originalRequest": {
             "url": {
@@ -71,15 +71,15 @@
       }
     },
     {
-      "id": "485deb45-80ce-448e-9daf-033f26d58e10",
+      "id": "6e294855-d457-4a64-b80d-2d3908d0709a",
       "name": "api/v1",
       "item": [
         {
-          "id": "f110ea68-684e-4b26-be15-25487717dfbf",
+          "id": "78e35807-d9a2-473f-beb8-912edbc5b345",
           "name": "auth",
           "item": [
             {
-              "id": "ad315fc2-b015-437d-a0ee-74a0a014ab2e",
+              "id": "e499a694-650e-4214-9dbe-82d89abed01d",
               "name": "Register a new user",
               "request": {
                 "name": "Register a new user",
@@ -121,7 +121,7 @@
               },
               "response": [
                 {
-                  "id": "088157d6-2eb9-4e9c-9087-1ba949ddda67",
+                  "id": "57daccae-9fb6-49bb-a4dc-85a7dd892368",
                   "name": "User created",
                   "originalRequest": {
                     "url": {
@@ -162,12 +162,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"2015-07-19T07:03:21.776Z\",\n    \"updatedAt\": \"1987-02-26T00:09:31.711Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
+                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"2005-05-10T18:30:57.034Z\",\n    \"updatedAt\": \"2005-02-21T05:52:31.955Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "68ded356-2292-4371-a9af-b6c059097d01",
+                  "id": "a254c894-9837-4558-8292-614c44f3ac5a",
                   "name": "Validation failed",
                   "originalRequest": {
                     "url": {
@@ -213,7 +213,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "bada9254-02f0-4400-ae1c-0f9639309516",
+                  "id": "538dee9c-35aa-4f02-a18a-2caad5752c83",
                   "name": "Email or username already in use",
                   "originalRequest": {
                     "url": {
@@ -265,7 +265,7 @@
               }
             },
             {
-              "id": "734fba95-a437-46de-b841-9a5892778160",
+              "id": "db87c6dc-a375-43c0-911d-83829cf5523b",
               "name": "Log in with email or username",
               "request": {
                 "name": "Log in with email or username",
@@ -310,7 +310,7 @@
               },
               "response": [
                 {
-                  "id": "29e90dda-c800-4ea5-ba3e-c4a429901955",
+                  "id": "ba54ab4a-73be-4ee3-acc5-3aaf8fe0f99a",
                   "name": "Login successful",
                   "originalRequest": {
                     "url": {
@@ -351,12 +351,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"data\": {\n    \"user\": {\n      \"_id\": \"664a1b2c3d4e5f678901234\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"username\": \"jane\",\n      \"email\": \"jane@example.com\",\n      \"bio\": \"string\",\n      \"status\": \"active\",\n      \"createdAt\": \"1966-10-22T09:58:52.659Z\",\n      \"updatedAt\": \"2009-04-23T15:58:13.947Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  },\n  \"message\": \"Login successful\"\n}",
+                  "body": "{\n  \"data\": {\n    \"user\": {\n      \"_id\": \"664a1b2c3d4e5f678901234\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"username\": \"jane\",\n      \"email\": \"jane@example.com\",\n      \"bio\": \"string\",\n      \"status\": \"active\",\n      \"createdAt\": \"1960-05-03T13:24:22.720Z\",\n      \"updatedAt\": \"1960-04-08T21:48:26.973Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  },\n  \"message\": \"Login successful\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "55567fa5-fe0f-436f-9993-96bf237bdbf4",
+                  "id": "56110589-08a9-4dbb-97f3-4d298f5db89c",
                   "name": "Validation failed or invalid credentials",
                   "originalRequest": {
                     "url": {
@@ -411,7 +411,7 @@
           "event": []
         },
         {
-          "id": "f36593b8-8ff1-48da-9a70-abf49d593628",
+          "id": "a3c3c3fc-19a8-48b0-9eca-14061468bbe7",
           "name": "Get logged-in user profile",
           "request": {
             "name": "Get logged-in user profile",
@@ -448,7 +448,7 @@
           },
           "response": [
             {
-              "id": "c77f418f-d855-49fc-9920-26c71a95bf4b",
+              "id": "867b238b-151a-41e7-b334-12884d09d4db",
               "name": "Current user profile",
               "originalRequest": {
                 "url": {
@@ -489,12 +489,12 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"2015-07-19T07:03:21.776Z\",\n    \"updatedAt\": \"1987-02-26T00:09:31.711Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
+              "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"2005-05-10T18:30:57.034Z\",\n    \"updatedAt\": \"2005-02-21T05:52:31.955Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "477bb695-57ac-4fd9-8cb6-617ea8976c3b",
+              "id": "ec09cea4-b6db-4a96-b6f9-54c916bb5c07",
               "name": "Missing, invalid, or expired token",
               "originalRequest": {
                 "url": {
@@ -540,7 +540,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "1aa13b88-00f9-47d3-8f31-19257055ad2e",
+              "id": "e6bc3f17-a5ed-4e00-a2e3-897b5178b696",
               "name": "User not found",
               "originalRequest": {
                 "url": {
@@ -604,7 +604,7 @@
     }
   ],
   "info": {
-    "_postman_id": "a8806083-2fca-440a-8d6c-f3f9023471a2",
+    "_postman_id": "a41345a6-7230-4a66-8184-8b027400f2db",
     "name": "Feed App API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": {
