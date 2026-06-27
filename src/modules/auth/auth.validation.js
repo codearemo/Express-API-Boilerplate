@@ -1,7 +1,10 @@
 const { z } = require('zod');
 
 const emailField = z.pipe(
-  z.string({ error: 'Email is required' }).trim(),
+  z
+    .string({ error: 'Email is required' })
+    .trim()
+    .min(1, 'Email is required'),
   z.email('Invalid email address'),
 );
 
@@ -14,8 +17,14 @@ const passwordField = z
   );
 
 const registerSchema = z.object({
-  firstName: z.string({ error: 'First name is required' }).trim(),
-  lastName: z.string({ error: 'Last name is required' }).trim(),
+  firstName: z
+    .string({ error: 'First name is required' })
+    .trim()
+    .min(1, 'First name is required'),
+  lastName: z
+    .string({ error: 'Last name is required' })
+    .trim()
+    .min(1, 'Last name is required'),
   username: z
     .string({ error: 'Username is required' })
     .trim()
@@ -30,13 +39,18 @@ const loginSchema = z.object({
     .string({ error: 'Email or username is required' })
     .trim()
     .min(2, 'Email or username must be at least 2 character'),
-  password: z.string({ error: 'Password is required' }),
+  password: z
+    .string({ error: 'Password is required' })
+    .min(1, 'Password is required'),
 });
 
 const forgotPasswordSchema = z.object({
   email: emailField,
   resetUrl: z.pipe(
-    z.string({ error: 'Reset URL is required' }).trim(),
+    z
+      .string({ error: 'Reset URL is required' })
+      .trim()
+      .min(1, 'Reset URL is required'),
     z.url('Reset URL must be a valid URL'),
   ),
 });
