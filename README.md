@@ -331,6 +331,7 @@ files: <photo-two.jpg>
   "message": "Files uploaded successfully",
   "data": [
     {
+      "id": "664a1b2c3d4e5f678901234567",
       "url": "http://localhost:3003/uploads/a1b2c3d4e5f678901234567890abcd12.jpg",
       "name": "a1b2c3d4e5f678901234567890abcd12.jpg",
       "originalName": "photo-one.jpg",
@@ -529,6 +530,7 @@ Tests live under `tests/`, grouped by area (`auth/`, `files/`, `middleware/`, `u
 |--------|----------------|
 | `auth.*` | Identity flows — register, login, JWT |
 | `users.*` | User entity — model, repository, profile |
+| `files.*` | File uploads — storage drivers, ownership, soft delete |
 
 ### Layer rules
 

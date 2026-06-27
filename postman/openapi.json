@@ -388,34 +388,229 @@
           }
         }
       },
-      "ApiErrorResponse": {
+      "ApiErrorMessageResponse": {
         "type": "object",
+        "required": [
+          "data",
+          "message"
+        ],
         "properties": {
           "data": {
             "type": "null",
-            "nullable": true,
-            "example": null
+            "nullable": true
           },
           "message": {
-            "type": "string",
-            "example": "Invalid credentials"
-          },
+            "type": "string"
+          }
+        }
+      },
+      "ApiValidationErrorResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "properties": {
           "details": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
                 "field": {
-                  "type": "string",
-                  "example": "email"
+                  "type": "string"
                 },
                 "message": {
-                  "type": "string",
-                  "example": "Invalid email address"
+                  "type": "string"
                 }
               }
             }
           }
+        },
+        "example": {
+          "data": null,
+          "message": "Validation failed",
+          "details": [
+            {
+              "field": "email",
+              "message": "Invalid email address"
+            }
+          ]
+        }
+      },
+      "ApiAuthRequiredError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Authentication required"
+        }
+      },
+      "ApiInvalidTokenError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Invalid or expired token"
+        }
+      },
+      "ApiInvalidCredentialsError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Invalid credentials"
+        }
+      },
+      "ApiInvalidResetTokenError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Invalid or expired reset token"
+        }
+      },
+      "ApiConflictError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Email already in use"
+        }
+      },
+      "ApiNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "File not found"
+        }
+      },
+      "ApiUserNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "User not found"
+        }
+      },
+      "ApiJsonBodyTooLargeError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Request body too large"
+        }
+      },
+      "ApiFileTooLargeError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "File too large"
+        }
+      },
+      "ApiUploadError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "At least one file is required"
+        }
+      },
+      "ApiRateLimitRegisterError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Too many registration attempts, please try again later"
+        }
+      },
+      "ApiRateLimitLoginError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Too many login attempts, please try again later"
+        }
+      },
+      "ApiRateLimitForgotPasswordError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Too many password reset requests, please try again later"
+        }
+      },
+      "ApiRateLimitResetPasswordError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Too many reset attempts, please try again later"
+        }
+      },
+      "ApiRateLimitUploadError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Too many upload requests, please try again later"
+        }
+      },
+      "ApiRateLimitGlobalError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Too many requests, please try again later"
         }
       }
     }
@@ -484,7 +679,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiValidationErrorResponse"
                 }
               }
             }
@@ -494,7 +689,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiConflictError"
                 }
               }
             }
@@ -504,7 +699,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiJsonBodyTooLargeError"
                 }
               }
             }
@@ -514,7 +709,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiRateLimitRegisterError"
                 }
               }
             }
@@ -555,7 +750,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiValidationErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiInvalidCredentialsError"
+                    }
+                  ]
                 }
               }
             }
@@ -565,7 +767,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiJsonBodyTooLargeError"
                 }
               }
             }
@@ -575,7 +777,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiRateLimitLoginError"
                 }
               }
             }
@@ -616,7 +818,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiValidationErrorResponse"
                 }
               }
             }
@@ -626,7 +828,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiJsonBodyTooLargeError"
                 }
               }
             }
@@ -636,7 +838,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiRateLimitForgotPasswordError"
                 }
               }
             }
@@ -677,7 +879,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiValidationErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiInvalidResetTokenError"
+                    }
+                  ]
                 }
               }
             }
@@ -687,7 +896,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiJsonBodyTooLargeError"
                 }
               }
             }
@@ -697,7 +906,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiRateLimitResetPasswordError"
                 }
               }
             }
@@ -743,7 +952,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiUploadError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiValidationErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiErrorMessageResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -753,7 +972,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiAuthRequiredError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiInvalidTokenError"
+                    }
+                  ]
                 }
               }
             }
@@ -763,7 +989,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiFileTooLargeError"
                 }
               }
             }
@@ -773,7 +999,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiRateLimitUploadError"
                 }
               }
             }
@@ -821,7 +1047,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiValidationErrorResponse"
                 }
               }
             }
@@ -831,7 +1057,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiAuthRequiredError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiInvalidTokenError"
+                    }
+                  ]
                 }
               }
             }
@@ -841,7 +1074,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiNotFoundError"
                 }
               }
             }
@@ -851,7 +1084,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiRateLimitUploadError"
                 }
               }
             }
@@ -886,7 +1119,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiAuthRequiredError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ApiInvalidTokenError"
+                    }
+                  ]
                 }
               }
             }
@@ -896,7 +1136,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
+                  "$ref": "#/components/schemas/ApiUserNotFoundError"
                 }
               }
             }

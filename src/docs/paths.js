@@ -54,25 +54,25 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiValidationErrorResponse'
  *       409:
  *         description: Email or username already in use
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiConflictError'
  *       429:
  *         description: Too many registration attempts from this IP
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiRateLimitRegisterError'
  *       413:
  *         description: JSON body exceeds JSON_BODY_LIMIT
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiJsonBodyTooLargeError'
  */
 
 /**
@@ -102,19 +102,21 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiValidationErrorResponse'
+ *                 - $ref: '#/components/schemas/ApiInvalidCredentialsError'
  *       429:
  *         description: Too many login attempts from this IP
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiRateLimitLoginError'
  *       413:
  *         description: JSON body exceeds JSON_BODY_LIMIT
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiJsonBodyTooLargeError'
  */
 
 /**
@@ -145,19 +147,19 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiValidationErrorResponse'
  *       429:
  *         description: Too many password reset requests from this IP
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiRateLimitForgotPasswordError'
  *       413:
  *         description: JSON body exceeds JSON_BODY_LIMIT
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiJsonBodyTooLargeError'
  */
 
 /**
@@ -187,19 +189,21 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiValidationErrorResponse'
+ *                 - $ref: '#/components/schemas/ApiInvalidResetTokenError'
  *       429:
  *         description: Too many reset attempts from this IP
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiRateLimitResetPasswordError'
  *       413:
  *         description: JSON body exceeds JSON_BODY_LIMIT
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiJsonBodyTooLargeError'
  */
 
 /**
@@ -231,25 +235,30 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiUploadError'
+ *                 - $ref: '#/components/schemas/ApiValidationErrorResponse'
+ *                 - $ref: '#/components/schemas/ApiErrorMessageResponse'
  *       401:
  *         description: Missing, invalid, or expired token
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiAuthRequiredError'
+ *                 - $ref: '#/components/schemas/ApiInvalidTokenError'
  *       413:
  *         description: File exceeds UPLOAD_MAX_FILE_SIZE
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiFileTooLargeError'
  *       429:
  *         description: Upload rate limit exceeded
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiRateLimitUploadError'
  */
 
 /**
@@ -287,25 +296,27 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiValidationErrorResponse'
  *       401:
  *         description: Missing, invalid, or expired token
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiAuthRequiredError'
+ *                 - $ref: '#/components/schemas/ApiInvalidTokenError'
  *       404:
  *         description: File not found or not owned by the current user
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiNotFoundError'
  *       429:
  *         description: Upload rate limit exceeded
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiRateLimitUploadError'
  */
 
 /**
@@ -328,13 +339,15 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/ApiAuthRequiredError'
+ *                 - $ref: '#/components/schemas/ApiInvalidTokenError'
  *       404:
  *         description: User not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
+ *               $ref: '#/components/schemas/ApiUserNotFoundError'
  */
 
 module.exports = {};

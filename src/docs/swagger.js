@@ -271,21 +271,146 @@ const options = {
             message: { type: 'string', example: 'File archived successfully' },
           },
         },
-        ApiErrorResponse: {
+        ApiErrorMessageResponse: {
           type: 'object',
+          required: ['data', 'message'],
           properties: {
-            data: { type: 'null', nullable: true, example: null },
-            message: { type: 'string', example: 'Invalid credentials' },
+            data: { type: 'null', nullable: true },
+            message: { type: 'string' },
+          },
+        },
+        ApiValidationErrorResponse: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          properties: {
             details: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
-                  field: { type: 'string', example: 'email' },
-                  message: { type: 'string', example: 'Invalid email address' },
+                  field: { type: 'string' },
+                  message: { type: 'string' },
                 },
               },
             },
+          },
+          example: {
+            data: null,
+            message: 'Validation failed',
+            details: [
+              { field: 'email', message: 'Invalid email address' },
+            ],
+          },
+        },
+        ApiAuthRequiredError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Authentication required',
+          },
+        },
+        ApiInvalidTokenError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Invalid or expired token',
+          },
+        },
+        ApiInvalidCredentialsError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Invalid credentials',
+          },
+        },
+        ApiInvalidResetTokenError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Invalid or expired reset token',
+          },
+        },
+        ApiConflictError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Email already in use',
+          },
+        },
+        ApiNotFoundError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'File not found',
+          },
+        },
+        ApiUserNotFoundError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'User not found',
+          },
+        },
+        ApiJsonBodyTooLargeError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Request body too large',
+          },
+        },
+        ApiFileTooLargeError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'File too large',
+          },
+        },
+        ApiUploadError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'At least one file is required',
+          },
+        },
+        ApiRateLimitRegisterError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Too many registration attempts, please try again later',
+          },
+        },
+        ApiRateLimitLoginError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Too many login attempts, please try again later',
+          },
+        },
+        ApiRateLimitForgotPasswordError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Too many password reset requests, please try again later',
+          },
+        },
+        ApiRateLimitResetPasswordError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Too many reset attempts, please try again later',
+          },
+        },
+        ApiRateLimitUploadError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Too many upload requests, please try again later',
+          },
+        },
+        ApiRateLimitGlobalError: {
+          allOf: [{ $ref: '#/components/schemas/ApiErrorMessageResponse' }],
+          example: {
+            data: null,
+            message: 'Too many requests, please try again later',
           },
         },
       },
