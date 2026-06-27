@@ -254,23 +254,27 @@
 
 /**
  * @openapi
- * /api/v1/uploads/archive:
- *   post:
+ * /api/v1/uploads/{fileId}:
+ *   delete:
  *     tags: [Uploads]
  *     summary: Archive an uploaded file (soft delete)
  *     description: |
  *       Moves a file out of the active storage location so clients can no longer access it
  *       at the original URL. The file is retained under an archive prefix/folder for
  *       server-side recovery (`UPLOAD_ARCHIVE_PREFIX`, default `_archive`).
- *       Pass the `name` value returned from the upload response.
+ *       Only the user who uploaded the file may archive it.
+ *       Pass the MongoDB `id` from the upload response (recommended), or the stored `name`.
+ *       For Cloudinary `public_id` values that contain `/`, prefer `id` or URL-encode the name.
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ArchiveUploadRequest'
+ *     parameters:
+ *       - in: path
+ *         name: fileId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: File `id` from the upload response, or stored `name`
+ *         example: 664a1b2c3d4e5f678901234567
  *     responses:
  *       200:
  *         description: File archived
@@ -279,7 +283,7 @@
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponseArchiveUpload'
  *       400:
- *         description: Validation error or file already archived
+ *         description: Invalid file name or file already archived in storage
  *         content:
  *           application/json:
  *             schema:
@@ -291,7 +295,13 @@
  *             schema:
  *               $ref: '#/components/schemas/ApiErrorResponse'
  *       404:
- *         description: File not found in active storage
+ *         description: File not found or not owned by the current user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       429:
+ *         description: Upload rate limit exceeded
  *         content:
  *           application/json:
  *             schema:

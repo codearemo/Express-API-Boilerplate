@@ -276,6 +276,11 @@
       "UploadFile": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "MongoDB file record id",
+            "example": "664a1b2c3d4e5f678901234567"
+          },
           "url": {
             "type": "string",
             "format": "uri",
@@ -344,22 +349,13 @@
           }
         }
       },
-      "ArchiveUploadRequest": {
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Stored file identifier from the upload response (`name` field)",
-            "example": "a1b2c3d4e5f678901234567890abcd12.jpg"
-          }
-        }
-      },
       "ArchivedUploadFile": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "example": "664a1b2c3d4e5f678901234567"
+          },
           "name": {
             "type": "string",
             "example": "a1b2c3d4e5f678901234567890abcd12.jpg"
@@ -785,28 +781,30 @@
         }
       }
     },
-    "/api/v1/uploads/archive": {
-      "post": {
+    "/api/v1/uploads/{fileId}": {
+      "delete": {
         "tags": [
           "Uploads"
         ],
         "summary": "Archive an uploaded file (soft delete)",
-        "description": "Moves a file out of the active storage location so clients can no longer access it\nat the original URL. The file is retained under an archive prefix/folder for\nserver-side recovery (`UPLOAD_ARCHIVE_PREFIX`, default `_archive`).\nPass the `name` value returned from the upload response.\n",
+        "description": "Moves a file out of the active storage location so clients can no longer access it\nat the original URL. The file is retained under an archive prefix/folder for\nserver-side recovery (`UPLOAD_ARCHIVE_PREFIX`, default `_archive`).\nOnly the user who uploaded the file may archive it.\nPass the MongoDB `id` from the upload response (recommended), or the stored `name`.\nFor Cloudinary `public_id` values that contain `/`, prefer `id` or URL-encode the name.\n",
         "security": [
           {
             "bearerAuth": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ArchiveUploadRequest"
-              }
-            }
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fileId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "File `id` from the upload response, or stored `name`",
+            "example": "664a1b2c3d4e5f678901234567"
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "File archived",
@@ -819,7 +817,7 @@
             }
           },
           "400": {
-            "description": "Validation error or file already archived",
+            "description": "Invalid file name or file already archived in storage",
             "content": {
               "application/json": {
                 "schema": {
@@ -839,7 +837,17 @@
             }
           },
           "404": {
-            "description": "File not found in active storage",
+            "description": "File not found or not owned by the current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Upload rate limit exceeded",
             "content": {
               "application/json": {
                 "schema": {

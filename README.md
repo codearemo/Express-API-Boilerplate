@@ -232,7 +232,7 @@ Interactive docs: [http://localhost:3003/api-docs](http://localhost:3003/api-doc
 | `POST` | `/api/v1/auth/forgot-password` | No | Email a password reset link |
 | `POST` | `/api/v1/auth/reset-password` | No | Set new password with reset token |
 | `POST` | `/api/v1/uploads` | Bearer JWT | Upload one or more files (`multipart/form-data`, field `files`) |
-| `POST` | `/api/v1/uploads/archive` | Bearer JWT | Soft-delete a file by moving it to archive storage (JSON body: `{ "name" }`) |
+| `DELETE` | `/api/v1/uploads/:fileId` | Bearer JWT | Soft-delete by `id` (recommended) or `name` from upload response |
 | `GET` | `/api/v1/users/me` | Bearer JWT | Get logged-in user profile |
 
 ### Register
@@ -355,19 +355,16 @@ Default limits: **5MB per file**, **10 files** per request. Allowed types: JPEG,
 
 ### Archive a file (soft delete)
 
-Moves a file out of active storage so the original URL no longer works. The file is retained under an internal archive location (`UPLOAD_ARCHIVE_PREFIX`, default `_archive`) for server-side recovery.
+Moves a file out of active storage so the original URL no longer works. Only the **user who uploaded the file** can archive it. The file is retained under an internal archive location (`UPLOAD_ARCHIVE_PREFIX`, default `_archive`) for server-side recovery.
 
 ```http
-POST /api/v1/uploads/archive
+DELETE /api/v1/uploads/664a1b2c3d4e5f678901234567
 Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "name": "a1b2c3d4e5f678901234567890abcd12.jpg"
-}
 ```
 
-Use the `name` value from the upload response. Archive behavior by driver:
+Use the `id` from the upload response (recommended). You can also pass `name` instead of `id`. For Cloudinary `public_id` values that contain `/`, prefer `id` over URL-encoding the name.
+
+Upload metadata (owner, `id`, `name`, `provider`, status) is stored in MongoDB when files are uploaded. If the database write fails after storage, uploaded blobs are rolled back automatically.
 
 | Driver | Active storage | Archive location |
 |--------|----------------|------------------|

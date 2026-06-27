@@ -16,6 +16,11 @@ router.post(
   filesController.uploadFiles,
 );
 
-router.post('/archive', authenticate, filesController.archiveFile);
+router.delete(
+  '/:fileId',
+  authenticate,
+  uploadLimiter,
+  filesController.archiveFile,
+);
 
 module.exports = router;

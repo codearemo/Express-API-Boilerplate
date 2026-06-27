@@ -3,7 +3,8 @@ const path = require('path');
 const request = require('supertest');
 const app = require('../../src/app');
 const config = require('../../src/config');
-const { getAuthToken } = require('../helpers');
+const filesRepository = require('../../src/modules/files/repositories');
+const { getAuthToken, validRegisterPayload, VALID_PASSWORD } = require('../helpers');
 
 const API = '/api/v1';
 
@@ -11,6 +12,23 @@ const API = '/api/v1';
 const JPEG_BYTES = Buffer.from([
   0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
 ]);
+
+async function getSecondUserToken() {
+  await request(app)
+    .post(`${API}/auth/register`)
+    .send(
+      validRegisterPayload({
+        username: 'john',
+        email: 'john@example.com',
+      }),
+    );
+
+  const loginResponse = await request(app)
+    .post(`${API}/auth/login`)
+    .send({ identifier: 'john', password: VALID_PASSWORD });
+
+  return loginResponse.body.data.token;
+}
 
 describe('POST /uploads', () => {
   it('returns 401 without a token', async () => {
@@ -45,6 +63,7 @@ describe('POST /uploads', () => {
     expect(response.body.message).toBe('Files uploaded successfully');
     expect(response.body.data).toHaveLength(2);
     expect(response.body.data[0]).toMatchObject({
+      id: expect.stringMatching(/^[a-f0-9]{24}$/),
       originalName: 'photo-one.jpg',
       mimeType: 'image/jpeg',
       encoding: '7bit',
@@ -62,6 +81,26 @@ describe('POST /uploads', () => {
     expect(fs.existsSync(filePath)).toBe(true);
   });
 
+  it('removes stored files when the database write fails', async () => {
+    const token = await getAuthToken(app);
+    const filesBefore = fs.readdirSync(config.upload.local.directory);
+    const createManySpy = vi
+      .spyOn(filesRepository, 'createMany')
+      .mockRejectedValueOnce(new Error('db failed'));
+
+    const response = await request(app)
+      .post(`${API}/uploads`)
+      .set('Authorization', `Bearer ${token}`)
+      .attach('files', JPEG_BYTES, 'photo.jpg');
+
+    createManySpy.mockRestore();
+
+    expect(response.status).toBe(500);
+
+    const filesAfter = fs.readdirSync(config.upload.local.directory);
+    expect(filesAfter).toEqual(filesBefore);
+  });
+
   it('returns 400 for disallowed file types', async () => {
     const token = await getAuthToken(app);
 
@@ -75,16 +114,16 @@ describe('POST /uploads', () => {
   });
 });
 
-describe('POST /uploads/archive', () => {
+describe('DELETE /uploads/:fileId', () => {
   it('returns 401 without a token', async () => {
-    const response = await request(app)
-      .post(`${API}/uploads/archive`)
-      .send({ name: 'a1b2c3d4e5f678901234567890abcd12.jpg' });
+    const response = await request(app).delete(
+      `${API}/uploads/a1b2c3d4e5f678901234567890abcd12.jpg`,
+    );
 
     expect(response.status).toBe(401);
   });
 
-  it('archives an uploaded file and removes it from active storage', async () => {
+  it('archives an uploaded file by name and removes it from active storage', async () => {
     const token = await getAuthToken(app);
 
     const uploadResponse = await request(app)
@@ -94,20 +133,20 @@ describe('POST /uploads/archive', () => {
 
     expect(uploadResponse.status).toBe(201);
 
-    const { name } = uploadResponse.body.data[0];
+    const { id, name } = uploadResponse.body.data[0];
     const activePath = path.join(config.upload.local.directory, name);
     const archivePath = path.join(config.upload.local.archiveDirectory, name);
 
     expect(fs.existsSync(activePath)).toBe(true);
 
     const archiveResponse = await request(app)
-      .post(`${API}/uploads/archive`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({ name });
+      .delete(`${API}/uploads/${name}`)
+      .set('Authorization', `Bearer ${token}`);
 
     expect(archiveResponse.status).toBe(200);
     expect(archiveResponse.body.message).toBe('File archived successfully');
     expect(archiveResponse.body.data).toEqual({
+      id,
       name,
       archivedName: `_archive/${name}`,
       provider: 'local',
@@ -119,27 +158,81 @@ describe('POST /uploads/archive', () => {
     expect(publicResponse.status).toBe(404);
   });
 
-  it('returns 404 when archiving a file that does not exist', async () => {
+  it('archives an uploaded file by id', async () => {
     const token = await getAuthToken(app);
 
-    const response = await request(app)
-      .post(`${API}/uploads/archive`)
+    const uploadResponse = await request(app)
+      .post(`${API}/uploads`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'a1b2c3d4e5f678901234567890abcd12.jpg' });
+      .attach('files', JPEG_BYTES, 'photo.jpg');
+
+    const { id, name } = uploadResponse.body.data[0];
+
+    const archiveResponse = await request(app)
+      .delete(`${API}/uploads/${id}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(archiveResponse.status).toBe(200);
+    expect(archiveResponse.body.data.id).toBe(id);
+    expect(fs.existsSync(path.join(config.upload.local.directory, name))).toBe(
+      false,
+    );
+  });
+
+  it('returns 404 when another user tries to archive the file', async () => {
+    const ownerToken = await getAuthToken(app);
+    const otherToken = await getSecondUserToken();
+
+    const uploadResponse = await request(app)
+      .post(`${API}/uploads`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .attach('files', JPEG_BYTES, 'photo.jpg');
+
+    const { name } = uploadResponse.body.data[0];
+
+    const response = await request(app)
+      .delete(`${API}/uploads/${name}`)
+      .set('Authorization', `Bearer ${otherToken}`);
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe('File not found');
   });
 
-  it('returns 400 when name is missing', async () => {
+  it('restores active storage when the database update fails', async () => {
+    const token = await getAuthToken(app);
+
+    const uploadResponse = await request(app)
+      .post(`${API}/uploads`)
+      .set('Authorization', `Bearer ${token}`)
+      .attach('files', JPEG_BYTES, 'photo.jpg');
+
+    const { name } = uploadResponse.body.data[0];
+    const activePath = path.join(config.upload.local.directory, name);
+    const markArchivedSpy = vi
+      .spyOn(filesRepository, 'markArchived')
+      .mockRejectedValueOnce(new Error('db failed'));
+
+    const response = await request(app)
+      .delete(`${API}/uploads/${name}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    markArchivedSpy.mockRestore();
+
+    expect(response.status).toBe(500);
+    expect(fs.existsSync(activePath)).toBe(true);
+    expect(
+      fs.existsSync(path.join(config.upload.local.archiveDirectory, name)),
+    ).toBe(false);
+  });
+
+  it('returns 404 when archiving a file that does not exist', async () => {
     const token = await getAuthToken(app);
 
     const response = await request(app)
-      .post(`${API}/uploads/archive`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({});
+      .delete(`${API}/uploads/a1b2c3d4e5f678901234567890abcd12.jpg`)
+      .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Validation failed');
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('File not found');
   });
 });

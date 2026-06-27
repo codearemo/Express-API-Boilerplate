@@ -88,4 +88,39 @@ describe('S3 storage driver', () => {
       statusCode: 404,
     });
   });
+
+  it('removes the archive copy when deleting the active key fails', async () => {
+    const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+    const name = 'a1b2c3d4e5f678901234567890abcd12.jpg';
+
+    sendMock
+      .mockResolvedValueOnce({})
+      .mockRejectedValueOnce(new Error('delete failed'))
+      .mockResolvedValueOnce({});
+
+    await expect(storage.archiveFile(name)).rejects.toThrow('delete failed');
+
+    expect(sendMock).toHaveBeenCalledTimes(3);
+    expect(sendMock.mock.calls[2][0]).toBeInstanceOf(DeleteObjectCommand);
+    expect(sendMock.mock.calls[2][0].input).toEqual({
+      Bucket: 'test-bucket',
+      Key: `_archive/${name}`,
+    });
+  });
+
+  it('restores an archived object back to the active key', async () => {
+    const { CopyObjectCommand, DeleteObjectCommand } =
+      require('@aws-sdk/client-s3');
+
+    sendMock.mockResolvedValue({});
+
+    await storage.restoreArchived({
+      name: 'a1b2c3d4e5f678901234567890abcd12.jpg',
+      archivedName: '_archive/a1b2c3d4e5f678901234567890abcd12.jpg',
+    });
+
+    expect(sendMock).toHaveBeenCalledTimes(2);
+    expect(sendMock.mock.calls[0][0]).toBeInstanceOf(CopyObjectCommand);
+    expect(sendMock.mock.calls[1][0]).toBeInstanceOf(DeleteObjectCommand);
+  });
 });

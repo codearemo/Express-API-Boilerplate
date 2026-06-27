@@ -26,11 +26,23 @@ async function storeFiles(files) {
   return getStorageDriver().storeFiles(files);
 }
 
+async function removeFiles(files) {
+  await Promise.allSettled(
+    files.map((file) => getStorageDriver().removeFile(file)),
+  );
+}
+
 async function archiveFile(name) {
   return getStorageDriver().archiveFile(name);
 }
 
+async function restoreArchived(archived) {
+  return getStorageDriver().restoreArchived(archived);
+}
+
 module.exports = {
   storeFiles,
+  removeFiles,
   archiveFile,
+  restoreArchived,
 };

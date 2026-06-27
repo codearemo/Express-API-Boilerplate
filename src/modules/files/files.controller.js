@@ -3,7 +3,10 @@ const { sendSuccess } = require('../../utils/api-response');
 
 async function uploadFiles(req, res, next) {
   try {
-    const files = await filesService.processUploadedFiles(req.files);
+    const files = await filesService.processUploadedFiles(
+      req.user.id,
+      req.files,
+    );
 
     sendSuccess(res, {
       statusCode: 201,
@@ -17,7 +20,10 @@ async function uploadFiles(req, res, next) {
 
 async function archiveFile(req, res, next) {
   try {
-    const archived = await filesService.archiveUploadedFile(req.body);
+    const archived = await filesService.archiveUploadedFile(
+      req.user.id,
+      req.params.fileId,
+    );
 
     sendSuccess(res, {
       message: 'File archived successfully',

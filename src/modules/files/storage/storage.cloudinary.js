@@ -72,13 +72,17 @@ async function uploadOne(file) {
 }
 
 async function rollbackOne(metadata) {
-  await getUploader().destroy(metadata.name, {
-    resource_type: 'auto',
-  });
+  await removeFile(metadata);
 }
 
 async function storeFiles(files) {
   return storeFilesWithRollback(files, uploadOne, rollbackOne);
+}
+
+async function removeFile({ name }) {
+  await getUploader().destroy(name, {
+    resource_type: 'auto',
+  });
 }
 
 async function archiveFile(name) {
@@ -110,9 +114,17 @@ async function archiveFile(name) {
   };
 }
 
+async function restoreArchived({ name, archivedName }) {
+  await getUploader().rename(archivedName, name, {
+    resource_type: 'auto',
+  });
+}
+
 module.exports = {
   storeFiles,
+  removeFile,
   archiveFile,
+  restoreArchived,
   __setUploaderForTests(uploader) {
     testUploader = uploader;
   },

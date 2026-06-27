@@ -73,19 +73,23 @@ async function uploadOne(file) {
 }
 
 async function rollbackOne(metadata) {
+  await removeFile(metadata);
+}
+
+async function storeFiles(files) {
+  return storeFilesWithRollback(files, uploadOne, rollbackOne);
+}
+
+async function removeFile({ name }) {
   const { bucket } = config.s3;
   const client = getS3Client();
 
   await client.send(
     new DeleteObjectCommand({
       Bucket: bucket,
-      Key: metadata.name,
+      Key: name,
     }),
   );
-}
-
-async function storeFiles(files) {
-  return storeFilesWithRollback(files, uploadOne, rollbackOne);
 }
 
 async function archiveFile(name) {
@@ -111,12 +115,25 @@ async function archiveFile(name) {
     throw error;
   }
 
-  await client.send(
-    new DeleteObjectCommand({
-      Bucket: bucket,
-      Key: name,
-    }),
-  );
+  try {
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: name,
+      }),
+    );
+  } catch (error) {
+    await client
+      .send(
+        new DeleteObjectCommand({
+          Bucket: bucket,
+          Key: archiveKey,
+        }),
+      )
+      .catch(() => {});
+
+    throw error;
+  }
 
   return {
     name,
@@ -125,9 +142,31 @@ async function archiveFile(name) {
   };
 }
 
+async function restoreArchived({ name, archivedName }) {
+  const { bucket } = config.s3;
+  const client = getS3Client();
+
+  await client.send(
+    new CopyObjectCommand({
+      Bucket: bucket,
+      CopySource: `${bucket}/${archivedName}`,
+      Key: name,
+    }),
+  );
+
+  await client.send(
+    new DeleteObjectCommand({
+      Bucket: bucket,
+      Key: archivedName,
+    }),
+  );
+}
+
 module.exports = {
   storeFiles,
+  removeFile,
   archiveFile,
+  restoreArchived,
   __setClientForTests(client) {
     testClient = client;
   },

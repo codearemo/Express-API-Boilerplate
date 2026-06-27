@@ -193,6 +193,11 @@ const options = {
         UploadFile: {
           type: 'object',
           properties: {
+            id: {
+              type: 'string',
+              description: 'MongoDB file record id',
+              example: '664a1b2c3d4e5f678901234567',
+            },
             url: {
               type: 'string',
               format: 'uri',
@@ -235,21 +240,13 @@ const options = {
             message: { type: 'string', example: 'Files uploaded successfully' },
           },
         },
-        ArchiveUploadRequest: {
-          type: 'object',
-          required: ['name'],
-          properties: {
-            name: {
-              type: 'string',
-              description:
-                'Stored file identifier from the upload response (`name` field)',
-              example: 'a1b2c3d4e5f678901234567890abcd12.jpg',
-            },
-          },
-        },
         ArchivedUploadFile: {
           type: 'object',
           properties: {
+            id: {
+              type: 'string',
+              example: '664a1b2c3d4e5f678901234567',
+            },
             name: {
               type: 'string',
               example: 'a1b2c3d4e5f678901234567890abcd12.jpg',

@@ -26,6 +26,14 @@ async function storeFiles(files) {
   );
 }
 
+async function removeFile({ name }) {
+  const activePath = path.join(config.upload.local.directory, name);
+
+  if (fs.existsSync(activePath)) {
+    fs.unlinkSync(activePath);
+  }
+}
+
 async function archiveFile(name) {
   const archiveKey = buildArchiveKey(name, config.upload.archivePrefix);
   const activePath = path.join(config.upload.local.directory, name);
@@ -47,7 +55,21 @@ async function archiveFile(name) {
   };
 }
 
+async function restoreArchived({ name }) {
+  const activePath = path.join(config.upload.local.directory, name);
+  const archivePath = path.join(config.upload.local.archiveDirectory, name);
+
+  if (!fs.existsSync(archivePath)) {
+    return;
+  }
+
+  fs.mkdirSync(config.upload.local.directory, { recursive: true });
+  fs.renameSync(archivePath, activePath);
+}
+
 module.exports = {
   storeFiles,
+  removeFile,
   archiveFile,
+  restoreArchived,
 };
