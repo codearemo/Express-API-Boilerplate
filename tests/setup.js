@@ -2,6 +2,13 @@
 // TEST SETUP — in-memory MongoDB, shared across test files
 // ******************************************************
 
+// Must run before test files import `app` (rate limits, JWT, etc.)
+process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET = 'test-jwt-secret';
+process.env.JWT_EXPIRES_IN = '1h';
+process.env.JWT_REFRESH_EXPIRES_IN = '7d';
+process.env.DB_DRIVER = 'mongo';
+
 const os = require('os');
 const path = require('path');
 
@@ -18,13 +25,6 @@ let mongoServer;
 
 // Runs once before all tests — spins up an isolated in-memory MongoDB
 beforeAll(async () => {
-  // Override .env so tests never touch dev/prod data
-  process.env.NODE_ENV = 'test';
-  process.env.JWT_SECRET = 'test-jwt-secret';
-  process.env.JWT_EXPIRES_IN = '1h';
-  process.env.JWT_REFRESH_EXPIRES_IN = '7d';
-  process.env.DB_DRIVER = 'mongo';
-
   mongoServer = await MongoMemoryServer.create();
   process.env.MONGO_URI = mongoServer.getUri();
 
@@ -36,6 +36,9 @@ beforeAll(async () => {
 afterEach(async () => {
   const mongoose = require('mongoose');
   const { collections } = mongoose.connection;
+  const { sentOtps } = require('../src/utils/mail');
+
+  sentOtps.length = 0;
 
   await Promise.all(
     Object.values(collections).map((collection) => collection.deleteMany({})),

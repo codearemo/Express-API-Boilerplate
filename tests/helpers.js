@@ -61,15 +61,27 @@ async function verifyRegisteredUser(app, email = 'jane@example.com') {
  * Register a user, verify email, and return a JWT for protected route tests.
  */
 async function getAuthToken(app) {
-  await request(app)
+  const registerResponse = await request(app)
     .post(`${API}/auth/register`)
     .send(validRegisterPayload());
+
+  if (registerResponse.status !== 201) {
+    throw new Error(
+      `register failed: ${registerResponse.status} ${registerResponse.body.message}`,
+    );
+  }
 
   await verifyRegisteredUser(app);
 
   const loginResponse = await request(app)
     .post(`${API}/auth/login`)
     .send({ identifier: 'jane', password: VALID_PASSWORD });
+
+  if (loginResponse.status !== 200) {
+    throw new Error(
+      `login failed: ${loginResponse.status} ${loginResponse.body.message}`,
+    );
+  }
 
   return loginResponse.body.data.token;
 }

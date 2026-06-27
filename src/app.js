@@ -28,7 +28,9 @@ app.use(corsMiddleware);
 app.use(express.json({ limit: config.jsonBodyLimit }));
 
 // Baseline per-IP rate limit for every route (auth routes also have stricter limits)
-app.use(globalLimiter);
+if (process.env.NODE_ENV !== 'test') {
+  app.use(globalLimiter);
+}
 
 // Local disk files — only served directly when UPLOAD_PUBLIC_ACCESS=true
 if (config.uploadDriver === 'local') {
