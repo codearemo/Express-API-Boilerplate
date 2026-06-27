@@ -23,8 +23,28 @@ function validRegisterPayload(overrides = {}) {
   };
 }
 
+const request = require('supertest');
+
+const API = '/api/v1';
+
+/**
+ * Register a user and return a JWT for protected route tests.
+ */
+async function getAuthToken(app) {
+  await request(app)
+    .post(`${API}/auth/register`)
+    .send(validRegisterPayload());
+
+  const loginResponse = await request(app)
+    .post(`${API}/auth/login`)
+    .send({ identifier: 'jane', password: VALID_PASSWORD });
+
+  return loginResponse.body.data.token;
+}
+
 module.exports = {
   validRegisterPayload,
   VALID_PASSWORD,
   VALID_NEW_PASSWORD,
+  getAuthToken,
 };

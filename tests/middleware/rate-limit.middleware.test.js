@@ -1,6 +1,6 @@
 const express = require('express');
 const request = require('supertest');
-const { createRateLimiter } = require('../src/middleware/rate-limit.middleware');
+const { createRateLimiter } = require('../../src/middleware/rate-limit.middleware');
 
 describe('rate limit middleware', () => {
   it('returns 429 with the uniform error envelope when the limit is exceeded', async () => {

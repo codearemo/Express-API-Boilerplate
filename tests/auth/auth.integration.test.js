@@ -1,7 +1,7 @@
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
-const app = require('../src/app');
-const { validRegisterPayload, VALID_PASSWORD } = require('./helpers');
+const app = require('../../src/app');
+const { validRegisterPayload, VALID_PASSWORD } = require('../helpers');
 
 // Supertest hits the Express app directly — no real HTTP server needed
 const API = '/api/v1';

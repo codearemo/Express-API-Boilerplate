@@ -190,6 +190,90 @@ const options = {
             },
           },
         },
+        UploadFile: {
+          type: 'object',
+          properties: {
+            url: {
+              type: 'string',
+              format: 'uri',
+              example: 'http://localhost:3003/uploads/a1b2c3d4e5f6.jpg',
+            },
+            name: {
+              type: 'string',
+              description: 'Stored filename on disk',
+              example: 'a1b2c3d4e5f678901234567890abcd12.jpg',
+            },
+            originalName: { type: 'string', example: 'photo.jpg' },
+            mimeType: { type: 'string', example: 'image/jpeg' },
+            size: { type: 'integer', example: 20480 },
+            encoding: { type: 'string', example: '7bit' },
+            provider: {
+              type: 'string',
+              enum: ['local', 's3', 'cloudinary'],
+              example: 'local',
+            },
+          },
+        },
+        UploadFilesRequest: {
+          type: 'object',
+          required: ['files'],
+          properties: {
+            files: {
+              type: 'array',
+              items: { type: 'string', format: 'binary' },
+              description: 'One or more files (field name must be `files`)',
+            },
+          },
+        },
+        SuccessResponseUploadFiles: {
+          type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/UploadFile' },
+            },
+            message: { type: 'string', example: 'Files uploaded successfully' },
+          },
+        },
+        ArchiveUploadRequest: {
+          type: 'object',
+          required: ['name'],
+          properties: {
+            name: {
+              type: 'string',
+              description:
+                'Stored file identifier from the upload response (`name` field)',
+              example: 'a1b2c3d4e5f678901234567890abcd12.jpg',
+            },
+          },
+        },
+        ArchivedUploadFile: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              example: 'a1b2c3d4e5f678901234567890abcd12.jpg',
+            },
+            archivedName: {
+              type: 'string',
+              description:
+                'Internal archive location (not publicly served at the original URL)',
+              example: '_archive/a1b2c3d4e5f678901234567890abcd12.jpg',
+            },
+            provider: {
+              type: 'string',
+              enum: ['local', 's3', 'cloudinary'],
+              example: 'local',
+            },
+          },
+        },
+        SuccessResponseArchiveUpload: {
+          type: 'object',
+          properties: {
+            data: { $ref: '#/components/schemas/ArchivedUploadFile' },
+            message: { type: 'string', example: 'File archived successfully' },
+          },
+        },
         ApiErrorResponse: {
           type: 'object',
           properties: {

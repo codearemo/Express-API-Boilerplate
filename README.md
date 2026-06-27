@@ -9,6 +9,7 @@ REST API for a social feed application. Built with Express and a layered archite
 - **Versioned API** — all routes under `/api/v1`
 - **Auth** — register, login (email or username via single `identifier` field), forgot/reset password, JWT bearer tokens
 - **Users** — protected profile endpoint (`GET /users/me`)
+- **Uploads** — multipart upload (`POST /uploads`) with switchable storage: `local`, `s3`, or `cloudinary`
 - **Validation** — Zod schemas with field-level error `details`
 - **Uniform responses** — consistent `{ data, message, details?, pagination? }` envelope
 - **Password security** — bcrypt hashing, passwords never returned in API responses
@@ -159,13 +160,13 @@ RATE_LIMIT_RESET_PASSWORD_WINDOW_MS=300000
 | `ALLOWED_ORIGINS` | No | Comma-separated frontend URLs for CORS — required before a browser app can call the API cross-origin |
 | `JSON_BODY_LIMIT` | No | Max JSON body size (default: `10kb`) |
 | `DB_DRIVER` | No | `mongo` or `sql` (default: `mongo`) |
-| `MONGO_URI` | Yes* | MongoDB connection string |
-| `SQL_*` | Yes** | MySQL settings when using SQL driver |
-| `SMTP_HOST` | Yes*** | SMTP server hostname |
+| `MONGO_URI` | Yes† | MongoDB connection string |
+| `SQL_*` | Yes†† | MySQL settings when using SQL driver |
+| `SMTP_HOST` | Yes††† | SMTP server hostname |
 | `SMTP_PORT` | No | SMTP port (default: `587`) |
 | `SMTP_SECURE` | No | Use TLS (`true`/`false`, default: `false`) |
-| `SMTP_USER` | Yes*** | SMTP username |
-| `SMTP_PASS` | Yes*** | SMTP password |
+| `SMTP_USER` | Yes††† | SMTP username |
+| `SMTP_PASS` | Yes††† | SMTP password |
 | `SMTP_FROM` | No | From address (defaults to `SMTP_USER`) |
 | `PASSWORD_RESET_EXPIRES_MINUTES` | No | Reset token TTL (default: `60`) |
 | `RATE_LIMIT_GLOBAL_MAX` | No | Max requests per IP across all routes (default: `200`) |
@@ -178,10 +179,28 @@ RATE_LIMIT_RESET_PASSWORD_WINDOW_MS=300000
 | `RATE_LIMIT_FORGOT_PASSWORD_WINDOW_MS` | No | Forgot-password window in ms (default: `300000` = 5 min) |
 | `RATE_LIMIT_RESET_PASSWORD_MAX` | No | Max reset-password requests per IP (default: `10`) |
 | `RATE_LIMIT_RESET_PASSWORD_WINDOW_MS` | No | Reset-password window in ms (default: `300000` = 5 min) |
+| `UPLOAD_DRIVER` | No | Storage backend: `local`, `s3`, or `cloudinary` (default: `local`) |
+| `UPLOAD_MAX_FILE_SIZE` | No | Max bytes per file (default: `5242880` = 5MB) |
+| `UPLOAD_MAX_FILES` | No | Max files per request (default: `10`) |
+| `UPLOAD_ALLOWED_MIME_TYPES` | No | Comma-separated allowlist (default: JPEG, PNG, GIF, WebP, PDF) |
+| `UPLOAD_DIR` | No* | Local storage directory (default: `uploads/`) |
+| `UPLOAD_BASE_URL` | No* | Public base URL for local files (default: `http://localhost:<PORT>`) |
+| `S3_BUCKET` | Yes** | S3 bucket name |
+| `S3_REGION` | No** | AWS region (default: `us-east-1`) |
+| `S3_ACCESS_KEY_ID` | Yes** | AWS access key |
+| `S3_SECRET_ACCESS_KEY` | Yes** | AWS secret key |
+| `S3_PUBLIC_URL_BASE` | No** | Optional CDN/base URL for S3 objects |
+| `CLOUDINARY_CLOUD_NAME` | Yes*** | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Yes*** | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Yes*** | Cloudinary API secret |
+| `CLOUDINARY_FOLDER` | No*** | Upload folder (default: `feed-app`) |
 
-\* Required when `DB_DRIVER=mongo`  
-\** Required when `DB_DRIVER=sql`  
-\*** Required when using forgot-password (real SMTP in dev and prod)
+\* Used when `UPLOAD_DRIVER=local`  
+\** Required when `UPLOAD_DRIVER=s3`  
+\*** Required when `UPLOAD_DRIVER=cloudinary`  
+† Required when `DB_DRIVER=mongo`  
+†† Required when `DB_DRIVER=sql`  
+††† Required when using forgot-password (real SMTP in dev and prod)
 
 ### Run the server
 
@@ -212,6 +231,8 @@ Interactive docs: [http://localhost:3003/api-docs](http://localhost:3003/api-doc
 | `POST` | `/api/v1/auth/login` | No | Login, returns JWT |
 | `POST` | `/api/v1/auth/forgot-password` | No | Email a password reset link |
 | `POST` | `/api/v1/auth/reset-password` | No | Set new password with reset token |
+| `POST` | `/api/v1/uploads` | Bearer JWT | Upload one or more files (`multipart/form-data`, field `files`) |
+| `POST` | `/api/v1/uploads/archive` | Bearer JWT | Soft-delete a file by moving it to archive storage (JSON body: `{ "name" }`) |
 | `GET` | `/api/v1/users/me` | Bearer JWT | Get logged-in user profile |
 
 ### Register
@@ -289,6 +310,70 @@ Content-Type: application/json
 GET /api/v1/users/me
 Authorization: Bearer <token>
 ```
+
+### Upload files
+
+Send one or more files as `multipart/form-data` with field name **`files`** (repeat the field for multiple files). Requires JWT.
+
+```http
+POST /api/v1/uploads
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+files: <photo-one.jpg>
+files: <photo-two.jpg>
+```
+
+**Success (201):**
+
+```json
+{
+  "message": "Files uploaded successfully",
+  "data": [
+    {
+      "url": "http://localhost:3003/uploads/a1b2c3d4e5f678901234567890abcd12.jpg",
+      "name": "a1b2c3d4e5f678901234567890abcd12.jpg",
+      "originalName": "photo-one.jpg",
+      "mimeType": "image/jpeg",
+      "size": 20480,
+      "encoding": "7bit",
+      "provider": "local"
+    }
+  ]
+}
+```
+
+Set `UPLOAD_DRIVER` in `.env` to pick the storage backend (same idea as `DB_DRIVER`):
+
+| Driver | Behavior |
+|--------|----------|
+| `local` | Files saved under `UPLOAD_DIR`, served at `/uploads/<name>` |
+| `s3` | Files uploaded to AWS S3; response URLs point to S3 (or `S3_PUBLIC_URL_BASE`) |
+| `cloudinary` | Files uploaded to Cloudinary; response URLs are Cloudinary CDN links |
+
+Default limits: **5MB per file**, **10 files** per request. Allowed types: JPEG, PNG, GIF, WebP, PDF.
+
+### Archive a file (soft delete)
+
+Moves a file out of active storage so the original URL no longer works. The file is retained under an internal archive location (`UPLOAD_ARCHIVE_PREFIX`, default `_archive`) for server-side recovery.
+
+```http
+POST /api/v1/uploads/archive
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "a1b2c3d4e5f678901234567890abcd12.jpg"
+}
+```
+
+Use the `name` value from the upload response. Archive behavior by driver:
+
+| Driver | Active storage | Archive location |
+|--------|----------------|------------------|
+| `local` | `UPLOAD_DIR` (public `/uploads/`) | `UPLOAD_ARCHIVE_DIR` (not publicly served) |
+| `s3` | Bucket root key | `_archive/<name>` key (original URL stops working) |
+| `cloudinary` | `CLOUDINARY_FOLDER/<id>` | `CLOUDINARY_FOLDER/_archive/<id>` via rename |
 
 ---
 
@@ -437,7 +522,7 @@ npm test           # run once
 npm run test:watch # re-run on file changes
 ```
 
-Tests live in `tests/` and cover register (conflicts, password rules), login (username and email), JWT auth errors, protected `/users/me`, password reset (including token reuse), mongo error mapping, and rate limiting.
+Tests live under `tests/`, grouped by area (`auth/`, `files/`, `middleware/`, `utils/`, `config/`, `health/`). Shared setup is in `tests/setup.js`; helpers in `tests/helpers.js`.
 
 ---
 

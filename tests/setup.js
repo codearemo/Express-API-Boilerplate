@@ -2,6 +2,16 @@
 // TEST SETUP — in-memory MongoDB, shared across test files
 // ******************************************************
 
+const os = require('os');
+const path = require('path');
+
+process.env.UPLOAD_DIR = path.join(os.tmpdir(), 'feed-app-test-uploads');
+process.env.UPLOAD_ARCHIVE_DIR = path.join(
+  os.tmpdir(),
+  'feed-app-test-uploads-archive',
+);
+process.env.UPLOAD_DRIVER = 'local';
+
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 let mongoServer;

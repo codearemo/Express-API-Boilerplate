@@ -39,6 +39,54 @@ const config = {
   get jsonBodyLimit() {
     return process.env.JSON_BODY_LIMIT || '10kb';
   },
+  get uploadDriver() {
+    return process.env.UPLOAD_DRIVER || 'local';
+  },
+  get upload() {
+    const path = require('path');
+    const { DEFAULT_ALLOWED_MIME_TYPES } = require('../constants/upload');
+
+    const allowedFromEnv = parseCommaSeparatedList(
+      process.env.UPLOAD_ALLOWED_MIME_TYPES,
+    );
+
+    const directory =
+      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+
+    return {
+      maxFileSize: Number(process.env.UPLOAD_MAX_FILE_SIZE) || 5 * 1024 * 1024,
+      maxFiles: Number(process.env.UPLOAD_MAX_FILES) || 10,
+      archivePrefix: process.env.UPLOAD_ARCHIVE_PREFIX || '_archive',
+      allowedMimeTypes:
+        allowedFromEnv.length > 0 ? allowedFromEnv : DEFAULT_ALLOWED_MIME_TYPES,
+      local: {
+        directory,
+        archiveDirectory:
+          process.env.UPLOAD_ARCHIVE_DIR ||
+          path.join(process.cwd(), 'uploads-archive'),
+        baseUrl:
+          process.env.UPLOAD_BASE_URL ||
+          `http://localhost:${Number(process.env.PORT) || 3000}`,
+      },
+    };
+  },
+  get s3() {
+    return {
+      bucket: process.env.S3_BUCKET,
+      region: process.env.S3_REGION || 'us-east-1',
+      accessKeyId: process.env.S3_ACCESS_KEY_ID,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+      publicUrlBase: process.env.S3_PUBLIC_URL_BASE,
+    };
+  },
+  get cloudinary() {
+    return {
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      apiKey: process.env.CLOUDINARY_API_KEY,
+      apiSecret: process.env.CLOUDINARY_API_SECRET,
+      folder: process.env.CLOUDINARY_FOLDER || 'feed-app',
+    };
+  },
   get rateLimit() {
     const authWindowMs = 5 * 60 * 1000;
 
@@ -69,6 +117,11 @@ const config = {
           Number(process.env.RATE_LIMIT_RESET_PASSWORD_WINDOW_MS) ||
           authWindowMs,
         max: Number(process.env.RATE_LIMIT_RESET_PASSWORD_MAX) || 10,
+      },
+      upload: {
+        windowMs:
+          Number(process.env.RATE_LIMIT_UPLOAD_WINDOW_MS) || authWindowMs,
+        max: Number(process.env.RATE_LIMIT_UPLOAD_MAX) || 20,
       },
     };
   },

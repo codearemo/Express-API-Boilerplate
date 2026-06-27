@@ -16,6 +16,26 @@ function validateEnv() {
   if (!config.JWT_SECRET) {
     throw new Error('JWT_SECRET is required. Set it in your .env file.');
   }
+
+  if (config.uploadDriver === 's3') {
+    const { bucket, accessKeyId, secretAccessKey } = config.s3;
+
+    if (!bucket || !accessKeyId || !secretAccessKey) {
+      throw new Error(
+        'UPLOAD_DRIVER=s3 requires S3_BUCKET, S3_ACCESS_KEY_ID, and S3_SECRET_ACCESS_KEY.',
+      );
+    }
+  }
+
+  if (config.uploadDriver === 'cloudinary') {
+    const { cloudName, apiKey, apiSecret } = config.cloudinary;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      throw new Error(
+        'UPLOAD_DRIVER=cloudinary requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.',
+      );
+    }
+  }
 }
 
 // Start the server

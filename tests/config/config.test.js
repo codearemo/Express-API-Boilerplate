@@ -1,4 +1,4 @@
-const { parseCommaSeparatedList } = require('../src/config');
+const { parseCommaSeparatedList } = require('../../src/config');
 
 describe('parseCommaSeparatedList', () => {
   it('returns an empty array for empty or missing values', () => {

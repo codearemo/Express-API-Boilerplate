@@ -1,11 +1,11 @@
 const request = require('supertest');
-const app = require('../src/app');
+const app = require('../../src/app');
 const {
   validRegisterPayload,
   VALID_PASSWORD,
   VALID_NEW_PASSWORD,
-} = require('./helpers');
-const { sentResetLinks } = require('../src/utils/mail');
+} = require('../helpers');
+const { sentResetLinks } = require('../../src/utils/mail');
 
 const API = '/api/v1';
 const RESET_URL = 'https://myapp.com/reset-password';
@@ -79,7 +79,7 @@ describe('Password reset API', () => {
     });
 
     it('returns 200 when SMTP fails for a registered email', async () => {
-      const mail = require('../src/utils/mail');
+      const mail = require('../../src/utils/mail');
       const sendSpy = vi
         .spyOn(mail, 'sendPasswordResetEmail')
         .mockRejectedValue(new Error('SMTP down'));

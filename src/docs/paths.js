@@ -204,6 +204,102 @@
 
 /**
  * @openapi
+ * /api/v1/uploads:
+ *   post:
+ *     tags: [Uploads]
+ *     summary: Upload one or more files
+ *     description: |
+ *       Multipart upload using field name `files` (repeat for multiple files).
+ *       Storage backend is selected via `UPLOAD_DRIVER` (`local`, `s3`, `cloudinary`).
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/UploadFilesRequest'
+ *     responses:
+ *       201:
+ *         description: Files uploaded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponseUploadFiles'
+ *       400:
+ *         description: No files, invalid type, or too many files
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       401:
+ *         description: Missing, invalid, or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       413:
+ *         description: File exceeds UPLOAD_MAX_FILE_SIZE
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       429:
+ *         description: Upload rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ */
+
+/**
+ * @openapi
+ * /api/v1/uploads/archive:
+ *   post:
+ *     tags: [Uploads]
+ *     summary: Archive an uploaded file (soft delete)
+ *     description: |
+ *       Moves a file out of the active storage location so clients can no longer access it
+ *       at the original URL. The file is retained under an archive prefix/folder for
+ *       server-side recovery (`UPLOAD_ARCHIVE_PREFIX`, default `_archive`).
+ *       Pass the `name` value returned from the upload response.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ArchiveUploadRequest'
+ *     responses:
+ *       200:
+ *         description: File archived
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponseArchiveUpload'
+ *       400:
+ *         description: Validation error or file already archived
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       401:
+ *         description: Missing, invalid, or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ *       404:
+ *         description: File not found in active storage
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiErrorResponse'
+ */
+
+/**
+ * @openapi
  * /api/v1/users/me:
  *   get:
  *     tags: [Users]

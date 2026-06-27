@@ -273,6 +273,125 @@
           }
         }
       },
+      "UploadFile": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "http://localhost:3003/uploads/a1b2c3d4e5f6.jpg"
+          },
+          "name": {
+            "type": "string",
+            "description": "Stored filename on disk",
+            "example": "a1b2c3d4e5f678901234567890abcd12.jpg"
+          },
+          "originalName": {
+            "type": "string",
+            "example": "photo.jpg"
+          },
+          "mimeType": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "size": {
+            "type": "integer",
+            "example": 20480
+          },
+          "encoding": {
+            "type": "string",
+            "example": "7bit"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "local",
+              "s3",
+              "cloudinary"
+            ],
+            "example": "local"
+          }
+        }
+      },
+      "UploadFilesRequest": {
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "description": "One or more files (field name must be `files`)"
+          }
+        }
+      },
+      "SuccessResponseUploadFiles": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UploadFile"
+            }
+          },
+          "message": {
+            "type": "string",
+            "example": "Files uploaded successfully"
+          }
+        }
+      },
+      "ArchiveUploadRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Stored file identifier from the upload response (`name` field)",
+            "example": "a1b2c3d4e5f678901234567890abcd12.jpg"
+          }
+        }
+      },
+      "ArchivedUploadFile": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "a1b2c3d4e5f678901234567890abcd12.jpg"
+          },
+          "archivedName": {
+            "type": "string",
+            "description": "Internal archive location (not publicly served at the original URL)",
+            "example": "_archive/a1b2c3d4e5f678901234567890abcd12.jpg"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "local",
+              "s3",
+              "cloudinary"
+            ],
+            "example": "local"
+          }
+        }
+      },
+      "SuccessResponseArchiveUpload": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ArchivedUploadFile"
+          },
+          "message": {
+            "type": "string",
+            "example": "File archived successfully"
+          }
+        }
+      },
       "ApiErrorResponse": {
         "type": "object",
         "properties": {
@@ -579,6 +698,148 @@
           },
           "429": {
             "description": "Too many reset attempts from this IP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads": {
+      "post": {
+        "tags": [
+          "Uploads"
+        ],
+        "summary": "Upload one or more files",
+        "description": "Multipart upload using field name `files` (repeat for multiple files).\nStorage backend is selected via `UPLOAD_DRIVER` (`local`, `s3`, `cloudinary`).\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFilesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Files uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponseUploadFiles"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No files, invalid type, or too many files",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "File exceeds UPLOAD_MAX_FILE_SIZE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Upload rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/archive": {
+      "post": {
+        "tags": [
+          "Uploads"
+        ],
+        "summary": "Archive an uploaded file (soft delete)",
+        "description": "Moves a file out of the active storage location so clients can no longer access it\nat the original URL. The file is retained under an archive prefix/folder for\nserver-side recovery (`UPLOAD_ARCHIVE_PREFIX`, default `_archive`).\nPass the `name` value returned from the upload response.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponseArchiveUpload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or file already archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "File not found in active storage",
             "content": {
               "application/json": {
                 "schema": {

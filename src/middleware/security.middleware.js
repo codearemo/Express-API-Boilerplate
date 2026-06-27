@@ -21,7 +21,12 @@ const corsMiddleware = cors({
   origin: getCorsOriginOption(config.cors.origins),
 });
 
+const helmetMiddleware = helmet({
+  // Uploaded files are loaded cross-origin by the frontend (e.g. <img src="...">)
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+});
+
 module.exports = {
-  helmetMiddleware: helmet(),
+  helmetMiddleware,
   corsMiddleware,
 };

@@ -30,6 +30,11 @@ app.use(express.json({ limit: config.jsonBodyLimit }));
 // Baseline per-IP rate limit for every route (auth routes also have stricter limits)
 app.use(globalLimiter);
 
+// Public URLs for uploaded files when using local disk storage
+if (config.uploadDriver === 'local') {
+  app.use('/uploads', express.static(config.upload.local.directory));
+}
+
 // Swagger UI — rebuilds spec on each request so paths.js edits show after refresh
 app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
   swaggerUi.setup(getSwaggerSpec())(req, res, next);

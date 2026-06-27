@@ -1,4 +1,4 @@
-const { mapMongoDuplicateKeyError } = require('../src/utils/mongo-errors');
+const { mapMongoDuplicateKeyError } = require('../../src/utils/mongo-errors');
 
 describe('mapMongoDuplicateKeyError', () => {
   it('maps email duplicate key errors to 409', () => {
