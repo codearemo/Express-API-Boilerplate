@@ -20,13 +20,17 @@ const config = {
     return Number(process.env.PASSWORD_RESET_EXPIRES_MINUTES) || 60;
   },
   get mail() {
+    const user = process.env.SMTP_USER;
+    const from =
+      process.env.SMTP_FROM || (user && user.includes('@') ? user : undefined);
+
     return {
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT) || 587,
       secure: process.env.SMTP_SECURE === 'true',
-      user: process.env.SMTP_USER,
+      user,
       pass: process.env.SMTP_PASS,
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      from,
     };
   },
   get mongo() {

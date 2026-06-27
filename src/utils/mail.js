@@ -36,8 +36,6 @@ function getTransporter() {
  * Send a password reset email with the full link (client URL + token query param).
  */
 async function sendPasswordResetEmail({ to, resetLink }) {
-  const { from } = config.mail;
-
   if (process.env.NODE_ENV !== 'production') {
     console.log(`[mail] Password reset link for ${to}: ${resetLink}`);
   }
@@ -46,6 +44,14 @@ async function sendPasswordResetEmail({ to, resetLink }) {
 
   if (process.env.NODE_ENV === 'test') {
     return;
+  }
+
+  const { from } = config.mail;
+
+  if (!from || !from.includes('@')) {
+    throw new Error(
+      'SMTP_FROM must be set to a verified sender email (e.g. you@example.com).',
+    );
   }
 
   await getTransporter().sendMail({
