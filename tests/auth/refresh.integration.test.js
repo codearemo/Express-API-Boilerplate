@@ -104,6 +104,32 @@ describe('Refresh token API', () => {
       expect(response.body.message).toBe('Account is inactive');
     });
 
+    it('returns 403 when the email is not verified', async () => {
+      const {
+        refreshTokens: refreshTokensRepository,
+      } = require('../../src/modules/auth/repositories');
+
+      const registerResponse = await request(app)
+        .post(`${API}/auth/register`)
+        .send(
+          validRegisterPayload({
+            username: 'unverifiedrefresh',
+            email: 'unverified-refresh@example.com',
+          }),
+        );
+
+      const refreshToken = await refreshTokensRepository.createForUser(
+        registerResponse.body.data._id,
+      );
+
+      const response = await request(app)
+        .post(`${API}/auth/refresh`)
+        .send({ refreshToken });
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('Email not verified');
+    });
+
     it('allows only one refresh when the same token is submitted twice in parallel', async () => {
       const { refreshToken } = await loginAndGetTokens();
 

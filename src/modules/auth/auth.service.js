@@ -250,6 +250,8 @@ async function socialLogin(body) {
     const existingByEmail = await usersRepository.findByEmail(profile.email);
 
     if (existingByEmail) {
+      // Email owner proved via the social provider. Link the account, verify
+      // email, and clear any squatter password from an unverified registration.
       await usersRepository.addAuthProvider(
         existingByEmail._id,
         profile.provider,

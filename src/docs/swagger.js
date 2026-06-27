@@ -279,7 +279,7 @@ const options = {
             message: {
               type: 'string',
               example:
-                'If that email is registered, a password reset link has been sent.',
+                'If that email is registered, a verification code has been sent.',
             },
           },
         },

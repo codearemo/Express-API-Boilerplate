@@ -210,7 +210,7 @@ RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS=300000
 | `RATE_LIMIT_SOCIAL_LOGIN_MAX` | No | Max social login requests per IP (default: `10`) |
 | `RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS` | No | Social login window in ms (default: `300000` = 5 min) |
 | `UPLOAD_DRIVER` | No | Storage backend: `local`, `s3`, or `cloudinary` (default: `local`) |
-| `UPLOAD_PUBLIC_ACCESS` | No | Serve local files at `/uploads` without JWT (default: `true` except when `NODE_ENV=production`) |
+| `UPLOAD_PUBLIC_ACCESS` | No | Serve local files at `/uploads` without JWT (default: `true` only when `NODE_ENV` is `development` or `test`; set explicitly in staging) |
 | `UPLOAD_MAX_FILE_SIZE` | No | Max bytes per file (default: `5242880` = 5MB) |
 | `UPLOAD_MAX_FILES` | No | Max files per request (default: `10`) |
 | `UPLOAD_ALLOWED_MIME_TYPES` | No | Comma-separated allowlist (default: JPEG, PNG, GIF, WebP, PDF) |
@@ -372,7 +372,8 @@ Content-Type: application/json
 Supported `provider` values: `google`, `apple`.
 
 - New users get an auto-generated username (`user_<hex>`) and `emailVerified: true` (provider already verified the email).
-- If the provider email matches an existing account, the provider is linked to that account; `emailVerified` is set when the provider reports a verified email.
+- If the provider email matches an **unverified** password registration, the account is linked, email is marked verified, and the squatter password is cleared — the real owner reclaims the email via the provider.
+- If the provider email matches an **already verified** password account, the provider is linked and password login continues to work.
 - **No separate verify-email OTP for social sign-up** — Google/Apple verify ownership; the server only accepts tokens where the provider sets `emailVerified: true` (for new sign-ups and linking).
 - Social-only accounts cannot use password login (`400` — `This account uses social login`).
 
@@ -478,7 +479,7 @@ Set `UPLOAD_DRIVER` in `.env` to pick the storage backend (same idea as `DB_DRIV
 | `s3` | Files uploaded to AWS S3; response URLs point to S3 (or `S3_PUBLIC_URL_BASE`) when public; otherwise auth-protected download route |
 | `cloudinary` | Files uploaded to Cloudinary; response URLs are Cloudinary CDN links when public; otherwise auth-protected download route |
 
-**Production default:** `UPLOAD_PUBLIC_ACCESS` is `false` when `NODE_ENV=production`. Anonymous users cannot fetch files by URL; any logged-in user with a valid JWT can download active files via `GET /api/v1/uploads/:fileId/download`.
+**Default:** `UPLOAD_PUBLIC_ACCESS` is `true` only when `NODE_ENV` is `development` or `test`. For staging and production, set `UPLOAD_PUBLIC_ACCESS=false` explicitly. Anonymous users cannot fetch files by URL; only the **uploader** can download active files via `GET /api/v1/uploads/:fileId/download` with a valid JWT.
 
 Default limits: **5MB per file**, **10 files** per request. Allowed types: JPEG, PNG, GIF, WebP, PDF.
 

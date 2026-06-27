@@ -1,6 +1,7 @@
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const app = require('../../src/app');
+const { signAccessToken } = require('../../src/modules/auth/auth.token');
 const { validRegisterPayload, VALID_PASSWORD, verifyRegisteredUser } = require('../helpers');
 
 // Supertest hits the Express app directly — no real HTTP server needed
@@ -252,6 +253,26 @@ describe('Auth API', () => {
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('Invalid or expired token');
+    });
+
+    it('returns 403 when the email is not verified', async () => {
+      const registerResponse = await request(app)
+        .post(`${API}/auth/register`)
+        .send(
+          validRegisterPayload({
+            username: 'unverifiedme',
+            email: 'unverified-me@example.com',
+          }),
+        );
+
+      const token = signAccessToken({ _id: registerResponse.body.data._id });
+
+      const response = await request(app)
+        .get(`${API}/users/me`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('Email not verified');
     });
 
     it('returns the logged-in user profile with a valid token', async () => {

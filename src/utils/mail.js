@@ -51,7 +51,7 @@ async function sendOtpEmail({ to, purpose, otp }) {
     throw new Error(`Unsupported OTP email purpose: ${purpose}`);
   }
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV === 'development') {
     console.log(`[mail] OTP for ${to} (${purpose}): ${otp}`);
   }
 

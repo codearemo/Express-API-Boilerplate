@@ -38,7 +38,10 @@ async function archiveFile(req, res, next) {
 
 async function downloadFile(req, res, next) {
   try {
-    const fileRecord = await filesService.getFileForDownload(req.params.fileId);
+    const fileRecord = await filesService.getFileForDownload(
+      req.user.id,
+      req.params.fileId,
+    );
     const opened = await storage.openFile(fileRecord);
 
     res.setHeader('Content-Type', fileRecord.mimeType);

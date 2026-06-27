@@ -289,4 +289,25 @@ describe('protected file access', () => {
     expect(authenticated.status).toBe(200);
     expect(authenticated.headers['content-type']).toMatch(/image\/jpeg/);
   });
+
+  it('returns 404 when another user tries to download the file', async () => {
+    const ownerToken = await getAuthToken(app);
+    const otherToken = await getSecondUserToken();
+
+    const uploadResponse = await request(app)
+      .post(`${API}/uploads`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .attach('files', JPEG_BYTES, 'protected-other.jpg');
+
+    expect(uploadResponse.status).toBe(201);
+
+    const downloadPath = new URL(uploadResponse.body.data[0].url).pathname;
+
+    const response = await request(app)
+      .get(downloadPath)
+      .set('Authorization', `Bearer ${otherToken}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('File not found');
+  });
 });

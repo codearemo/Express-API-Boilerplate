@@ -18,17 +18,6 @@ async function findActiveFileRecord(userId, rawIdentifier) {
   return filesRepository.findActiveByNameAndUserId(name, userId);
 }
 
-async function findActiveFileRecordForDownload(rawIdentifier) {
-  const identifier = decodeURIComponent(rawIdentifier);
-
-  if (isMongoObjectId(identifier)) {
-    return filesRepository.findActiveById(identifier);
-  }
-
-  const name = validateFileName(identifier);
-  return filesRepository.findActiveByName(name);
-}
-
 async function processUploadedFiles(userId, files) {
   if (!files?.length) {
     const error = new Error('At least one file is required');
@@ -68,8 +57,8 @@ async function archiveUploadedFile(userId, rawIdentifier) {
   return toArchivedFile(fileRecord, archived);
 }
 
-async function getFileForDownload(rawIdentifier) {
-  const fileRecord = await findActiveFileRecordForDownload(rawIdentifier);
+async function getFileForDownload(userId, rawIdentifier) {
+  const fileRecord = await findActiveFileRecord(userId, rawIdentifier);
 
   if (!fileRecord) {
     const error = new Error('File not found');

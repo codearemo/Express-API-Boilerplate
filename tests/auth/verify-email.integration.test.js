@@ -62,6 +62,26 @@ describe('Email verification API', () => {
       expect(response.body.message).toBe('Invalid or expired verification code');
     });
 
+    it('locks out after too many invalid OTP attempts', async () => {
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        const response = await request(app)
+          .post(`${API}/auth/verify-email`)
+          .send({ email: 'jane@example.com', otp: '000000' });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Invalid or expired verification code');
+      }
+
+      const otp = getLatestOtp('jane@example.com', OTP_PURPOSES.VERIFY_EMAIL);
+
+      const response = await request(app)
+        .post(`${API}/auth/verify-email`)
+        .send({ email: 'jane@example.com', otp });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Invalid or expired verification code');
+    });
+
     it('returns 400 when email is already verified', async () => {
       await verifyRegisteredUser(app);
 
