@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../../src/app');
+const config = require('../../src/config');
 const { OTP_PURPOSES } = require('../../src/constants/otp');
 const { sentOtps } = require('../../src/utils/mail');
 const {
@@ -11,18 +12,23 @@ const {
 
 const API = '/api/v1';
 
-describe('Email verification API', () => {
-  beforeEach(() => {
-    sentOtps.length = 0;
-  });
+async function registerJane() {
+  sentOtps.length = 0;
 
+  const response = await request(app)
+    .post(`${API}/auth/register`)
+    .send(validRegisterPayload());
+
+  expect(response.status).toBe(201);
+
+  return response;
+}
+
+describe('Email verification API', () => {
   describe('POST /auth/register', () => {
     it('sends a verification OTP and returns an unverified user', async () => {
-      const response = await request(app)
-        .post(`${API}/auth/register`)
-        .send(validRegisterPayload());
+      const response = await registerJane();
 
-      expect(response.status).toBe(201);
       expect(response.body.message).toMatch(/verification code has been sent/i);
       expect(response.body.data.emailVerified).toBe(false);
       expect(sentOtps).toHaveLength(1);
@@ -36,9 +42,7 @@ describe('Email verification API', () => {
 
   describe('POST /auth/verify-email', () => {
     beforeEach(async () => {
-      await request(app)
-        .post(`${API}/auth/register`)
-        .send(validRegisterPayload());
+      await registerJane();
     });
 
     it('verifies the email with a valid OTP', async () => {
@@ -56,23 +60,28 @@ describe('Email verification API', () => {
     it('returns 400 for an invalid OTP', async () => {
       const response = await request(app)
         .post(`${API}/auth/verify-email`)
-        .send({ email: 'jane@example.com', otp: '000000' });
+        .send({ email: 'jane@example.com', otp: '999999' });
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe('Invalid or expired verification code');
     });
 
     it('locks out after too many invalid OTP attempts', async () => {
-      for (let attempt = 0; attempt < 5; attempt += 1) {
+      const { maxAttempts } = config.otp;
+
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
         const response = await request(app)
           .post(`${API}/auth/verify-email`)
-          .send({ email: 'jane@example.com', otp: '000000' });
+          .send({ email: 'jane@example.com', otp: '999999' });
 
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe('Invalid or expired verification code');
+        expect(response.body.message).toBe(
+          'Invalid or expired verification code',
+        );
       }
 
       const otp = getLatestOtp('jane@example.com', OTP_PURPOSES.VERIFY_EMAIL);
+      expect(otp).toBeDefined();
 
       const response = await request(app)
         .post(`${API}/auth/verify-email`)
@@ -98,9 +107,7 @@ describe('Email verification API', () => {
 
   describe('POST /auth/resend-verification', () => {
     it('sends another verification OTP for an unverified user', async () => {
-      await request(app)
-        .post(`${API}/auth/register`)
-        .send(validRegisterPayload());
+      await registerJane();
 
       sentOtps.length = 0;
 
@@ -116,9 +123,7 @@ describe('Email verification API', () => {
 
   describe('POST /auth/login', () => {
     it('returns 403 when email is not verified', async () => {
-      await request(app)
-        .post(`${API}/auth/register`)
-        .send(validRegisterPayload());
+      await registerJane();
 
       const response = await request(app)
         .post(`${API}/auth/login`)
@@ -129,10 +134,7 @@ describe('Email verification API', () => {
     });
 
     it('allows login after email verification', async () => {
-      await request(app)
-        .post(`${API}/auth/register`)
-        .send(validRegisterPayload());
-
+      await registerJane();
       await verifyRegisteredUser(app);
 
       const response = await request(app)

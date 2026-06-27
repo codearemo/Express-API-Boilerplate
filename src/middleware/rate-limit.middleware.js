@@ -5,10 +5,18 @@
 const { rateLimit } = require('express-rate-limit');
 const config = require('../config');
 
+function shouldSkipRateLimit() {
+  return (
+    process.env.NODE_ENV === 'test' ||
+    process.env.VITEST === 'true' ||
+    typeof globalThis.vi !== 'undefined'
+  );
+}
+
 /**
  * Build a rate limiter with the project's uniform error envelope on 429.
  *
- * Disabled when NODE_ENV=test so integration tests are not throttled.
+ * Disabled during Vitest so integration tests are not throttled.
  * Override `skip` when unit-testing the limiter itself.
  */
 function createRateLimiter({ limit, windowMs, message, skip }) {
@@ -17,7 +25,7 @@ function createRateLimiter({ limit, windowMs, message, skip }) {
     limit,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
-    skip: skip ?? (() => process.env.NODE_ENV === 'test'),
+    skip: skip ?? shouldSkipRateLimit,
     handler: (_req, res) => {
       res.status(429).json({
         data: null,
@@ -109,6 +117,7 @@ const uploadLimiter = createRateLimiter({
 
 module.exports = {
   createRateLimiter,
+  shouldSkipRateLimit,
   globalLimiter,
   registerLimiter,
   loginLimiter,
