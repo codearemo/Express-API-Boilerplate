@@ -7,8 +7,8 @@ REST API for a social feed application. Built with Express and a layered archite
 ## Features
 
 - **Versioned API** — all routes under `/api/v1`
-- **Auth** — register, login (email or username via single `identifier` field), social login (Google, Apple), forgot/reset password, JWT access + refresh tokens
-- **Users** — protected profile endpoint (`GET /users/me`)
+- **Auth** — register, email verification (OTP), login (email or username via single `identifier` field), social login (Google, Apple), OTP forgot/reset password, JWT access + refresh tokens
+- **Users** — protected profile (`GET/PATCH /users/me`) with optional profile picture via upload file reference
 - **Uploads** — multipart upload (`POST /uploads`) with switchable storage: `local`, `s3`, or `cloudinary`
 - **Validation** — Zod schemas with field-level error `details`
 - **Uniform responses** — consistent `{ data, message, details?, pagination? }` envelope
@@ -415,7 +415,7 @@ Content-Type: application/json
 
 Always returns the same success message — even if the email is not registered or email delivery fails.
 
-In non-production environments, the OTP is also logged to the console.
+In development (`NODE_ENV=development`), the OTP is also logged to the console.
 
 ### Reset password
 
@@ -433,6 +433,8 @@ Content-Type: application/json
 ```
 
 ### Get profile
+
+Returns the full profile including a hydrated `profilePicture` object (or `null`). Auth responses from login/register/social do **not** include `profilePicture` — use this endpoint after sign-in.
 
 ```http
 GET /api/v1/users/me

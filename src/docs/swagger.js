@@ -52,6 +52,8 @@ const options = {
         },
         User: {
           type: 'object',
+          description:
+            'User object returned from auth routes (register, login, social). Does not include profilePicture — use GET /users/me for the full profile.',
           properties: {
             _id: { type: 'string', example: '664a1b2c3d4e5f678901234' },
             firstName: { type: 'string', example: 'Jane' },
@@ -62,14 +64,11 @@ const options = {
               format: 'email',
               example: 'jane@example.com',
             },
-            bio: { type: 'string', nullable: true },
-            profilePicture: {
-              oneOf: [
-                { $ref: '#/components/schemas/UploadFile' },
-                { type: 'null' },
-              ],
-              nullable: true,
+            emailVerified: {
+              type: 'boolean',
+              example: false,
             },
+            bio: { type: 'string', nullable: true },
             status: {
               type: 'string',
               enum: ['active', 'inactive'],
@@ -78,6 +77,25 @@ const options = {
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' },
           },
+        },
+        UserProfile: {
+          allOf: [
+            { $ref: '#/components/schemas/User' },
+            {
+              type: 'object',
+              description:
+                'Full profile from GET/PATCH /users/me. profilePicture is hydrated from the files collection.',
+              properties: {
+                profilePicture: {
+                  oneOf: [
+                    { $ref: '#/components/schemas/UploadFile' },
+                    { type: 'null' },
+                  ],
+                  nullable: true,
+                },
+              },
+            },
+          ],
         },
         RegisterRequest: {
           type: 'object',
@@ -292,10 +310,20 @@ const options = {
             },
           },
         },
+        SuccessResponseUserProfile: {
+          type: 'object',
+          properties: {
+            data: { $ref: '#/components/schemas/UserProfile' },
+            message: {
+              type: 'string',
+              example: 'Profile fetched successfully',
+            },
+          },
+        },
         SuccessResponseUserUpdated: {
           type: 'object',
           properties: {
-            data: { $ref: '#/components/schemas/User' },
+            data: { $ref: '#/components/schemas/UserProfile' },
             message: {
               type: 'string',
               example: 'Profile updated successfully',

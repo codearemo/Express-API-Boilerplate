@@ -643,6 +643,9 @@
  *   get:
  *     tags: [Users]
  *     summary: Get logged-in user profile
+ *     description: |
+ *       Returns the full profile including a hydrated `profilePicture` object (or `null`).
+ *       Auth responses from login/register/social do not include `profilePicture`.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -651,7 +654,7 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponseUser'
+ *               $ref: '#/components/schemas/SuccessResponseUserProfile'
  *       401:
  *         description: Missing, invalid, or expired token
  *         content:

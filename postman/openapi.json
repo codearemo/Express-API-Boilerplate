@@ -54,6 +54,7 @@
       },
       "User": {
         "type": "object",
+        "description": "User object returned from auth routes (register, login, social). Does not include profilePicture — use GET /users/me for the full profile.",
         "properties": {
           "_id": {
             "type": "string",
@@ -76,19 +77,12 @@
             "format": "email",
             "example": "jane@example.com"
           },
+          "emailVerified": {
+            "type": "boolean",
+            "example": false
+          },
           "bio": {
             "type": "string",
-            "nullable": true
-          },
-          "profilePicture": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/UploadFile"
-              },
-              {
-                "type": "null"
-              }
-            ],
             "nullable": true
           },
           "status": {
@@ -108,6 +102,30 @@
             "format": "date-time"
           }
         }
+      },
+      "UserProfile": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/User"
+          },
+          {
+            "type": "object",
+            "description": "Full profile from GET/PATCH /users/me. profilePicture is hydrated from the files collection.",
+            "properties": {
+              "profilePicture": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/UploadFile"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "nullable": true
+              }
+            }
+          }
+        ]
       },
       "RegisterRequest": {
         "type": "object",
@@ -386,11 +404,23 @@
           }
         }
       },
+      "SuccessResponseUserProfile": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UserProfile"
+          },
+          "message": {
+            "type": "string",
+            "example": "Profile fetched successfully"
+          }
+        }
+      },
       "SuccessResponseUserUpdated": {
         "type": "object",
         "properties": {
           "data": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/UserProfile"
           },
           "message": {
             "type": "string",
@@ -1869,6 +1899,7 @@
           "Users"
         ],
         "summary": "Get logged-in user profile",
+        "description": "Returns the full profile including a hydrated `profilePicture` object (or `null`).\nAuth responses from login/register/social do not include `profilePicture`.\n",
         "security": [
           {
             "bearerAuth": []
@@ -1880,7 +1911,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseUser"
+                  "$ref": "#/components/schemas/SuccessResponseUserProfile"
                 }
               }
             }
