@@ -34,7 +34,9 @@ function parseDurationToMs(value) {
 }
 
 function getRefreshTokenExpiresAt() {
-  return new Date(Date.now() + parseDurationToMs(config.JWT_REFRESH_EXPIRES_IN));
+  return new Date(
+    Date.now() + parseDurationToMs(config.JWT_REFRESH_EXPIRES_IN),
+  );
 }
 
 module.exports = {

@@ -86,6 +86,7 @@
  *       Returns a short-lived access JWT in `token` and a long-lived `refreshToken`.
  *       Use `token` as `Authorization: Bearer <token>` on protected routes.
  *       When `token` expires, call `POST /auth/refresh` with `refreshToken`.
+ *       Returns **403** if the account `status` is `inactive`.
  *     requestBody:
  *       required: true
  *       content:
@@ -136,6 +137,7 @@
  *     description: |
  *       Exchange a valid `refreshToken` for a new access `token` and rotated `refreshToken`.
  *       The previous refresh token is invalidated (single-use rotation).
+ *       Returns **403** if the account `status` is `inactive`.
  *     requestBody:
  *       required: true
  *       content:
@@ -274,7 +276,8 @@
  *     summary: Set a new password with a reset token
  *     description: |
  *       Use the `token` query param from the reset link emailed to the user.
- *       On success, log in separately with the new password.
+ *       On success, all refresh tokens for that user are revoked server-side.
+ *       Log in separately with the new password to obtain a new token pair.
  *     requestBody:
  *       required: true
  *       content:

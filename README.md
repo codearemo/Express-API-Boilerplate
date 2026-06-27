@@ -151,6 +151,10 @@ RATE_LIMIT_FORGOT_PASSWORD_MAX=5
 RATE_LIMIT_FORGOT_PASSWORD_WINDOW_MS=300000
 RATE_LIMIT_RESET_PASSWORD_MAX=10
 RATE_LIMIT_RESET_PASSWORD_WINDOW_MS=300000
+RATE_LIMIT_REFRESH_MAX=20
+RATE_LIMIT_REFRESH_WINDOW_MS=300000
+RATE_LIMIT_LOGOUT_MAX=20
+RATE_LIMIT_LOGOUT_WINDOW_MS=300000
 ```
 
 | Variable | Required | Description |
@@ -181,6 +185,10 @@ RATE_LIMIT_RESET_PASSWORD_WINDOW_MS=300000
 | `RATE_LIMIT_FORGOT_PASSWORD_WINDOW_MS` | No | Forgot-password window in ms (default: `300000` = 5 min) |
 | `RATE_LIMIT_RESET_PASSWORD_MAX` | No | Max reset-password requests per IP (default: `10`) |
 | `RATE_LIMIT_RESET_PASSWORD_WINDOW_MS` | No | Reset-password window in ms (default: `300000` = 5 min) |
+| `RATE_LIMIT_REFRESH_MAX` | No | Max refresh requests per IP (default: `20`) |
+| `RATE_LIMIT_REFRESH_WINDOW_MS` | No | Refresh window in ms (default: `300000` = 5 min) |
+| `RATE_LIMIT_LOGOUT_MAX` | No | Max logout requests per IP (default: `20`) |
+| `RATE_LIMIT_LOGOUT_WINDOW_MS` | No | Logout window in ms (default: `300000` = 5 min) |
 | `UPLOAD_DRIVER` | No | Storage backend: `local`, `s3`, or `cloudinary` (default: `local`) |
 | `UPLOAD_MAX_FILE_SIZE` | No | Max bytes per file (default: `5242880` = 5MB) |
 | `UPLOAD_MAX_FILES` | No | Max files per request (default: `10`) |
@@ -258,7 +266,9 @@ Content-Type: application/json
 
 ### Login
 
-Send a single `identifier` — email **or** username:
+Send a single `identifier` — email **or** username.
+
+Returns **403** with `"Account is inactive"` if the user's `status` is `inactive`.
 
 ```http
 POST /api/v1/auth/login
@@ -331,7 +341,7 @@ In non-production environments, the reset link is also logged to the console.
 
 ### Reset password
 
-Use the `token` from the emailed link. After success, log in separately with the new password.
+Use the `token` from the emailed link. On success, **all refresh tokens for that user are revoked** — existing sessions cannot refresh. Log in separately with the new password to get a new token pair.
 
 ```http
 POST /api/v1/auth/reset-password
@@ -485,7 +495,11 @@ All `/api/v1` responses use a uniform envelope.
 5. authenticate MW      →  sets req.user.id from JWT payload
 ```
 
-Access JWT payload contains only `{ sub: userId }` — no email or password in the token. Refresh tokens are opaque random strings stored **hashed** in MongoDB.
+Access JWT payload contains only `{ sub: userId }` — no email or password in the token. Refresh tokens are opaque random strings (64-char hex) stored **hashed** (SHA-256) in MongoDB. Refresh uses single-use rotation: the old token is deleted before a new one is issued.
+
+### Inactive accounts
+
+Users have `status: active | inactive` (default `active`). **Login** and **refresh** return **403** `"Account is inactive"` when `status` is `inactive`. An existing access JWT may still work on protected routes until it expires — only login and refresh are blocked today.
 
 ### Rate limiting
 

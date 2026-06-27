@@ -145,8 +145,10 @@ const options = {
           properties: {
             refreshToken: {
               type: 'string',
-              description: 'Refresh token from login or a prior refresh response',
-              example: 'a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12',
+              description:
+                'Refresh token from login or a prior refresh response',
+              example:
+                'a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12',
             },
           },
         },
@@ -155,13 +157,16 @@ const options = {
           properties: {
             token: {
               type: 'string',
-              description: 'Short-lived access JWT — `Authorization: Bearer <token>`',
+              description:
+                'Short-lived access JWT — `Authorization: Bearer <token>`',
               example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
             },
             refreshToken: {
               type: 'string',
-              description: 'Long-lived refresh token — store securely, send to POST /auth/refresh',
-              example: 'a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12',
+              description:
+                'Long-lived refresh token — store securely, send to POST /auth/refresh',
+              example:
+                'a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12',
             },
           },
         },
@@ -171,13 +176,15 @@ const options = {
             user: { $ref: '#/components/schemas/User' },
             token: {
               type: 'string',
-              description: 'Short-lived access JWT — send as `Authorization: Bearer <token>`',
+              description:
+                'Short-lived access JWT — send as `Authorization: Bearer <token>`',
               example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
             },
             refreshToken: {
               type: 'string',
               description: 'Long-lived refresh token for POST /auth/refresh',
-              example: 'a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12',
+              example:
+                'a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12',
             },
           },
         },
@@ -214,7 +221,10 @@ const options = {
           type: 'object',
           properties: {
             data: { $ref: '#/components/schemas/AuthTokens' },
-            message: { type: 'string', example: 'Token refreshed successfully' },
+            message: {
+              type: 'string',
+              example: 'Token refreshed successfully',
+            },
           },
         },
         SuccessResponseMessage: {

@@ -108,9 +108,8 @@ async function login(body) {
 
 async function refresh(body) {
   const { refreshToken } = validateRefreshToken(body);
-  const storedToken = await refreshTokensRepository.consumeValidByRawToken(
-    refreshToken,
-  );
+  const storedToken =
+    await refreshTokensRepository.consumeValidByRawToken(refreshToken);
 
   if (!storedToken) {
     const error = new Error('Invalid or expired refresh token');

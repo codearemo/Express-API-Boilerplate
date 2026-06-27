@@ -515,6 +515,17 @@
           "message": "Invalid credentials"
         }
       },
+      "ApiInactiveAccountError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorMessageResponse"
+          }
+        ],
+        "example": {
+          "data": null,
+          "message": "Account is inactive"
+        }
+      },
       "ApiInvalidResetTokenError": {
         "allOf": [
           {
@@ -801,7 +812,7 @@
           "Auth"
         ],
         "summary": "Log in with email or username",
-        "description": "Send a single `identifier` (email or username) and `password`.\nReturns a short-lived access JWT in `token` and a long-lived `refreshToken`.\nUse `token` as `Authorization: Bearer <token>` on protected routes.\nWhen `token` expires, call `POST /auth/refresh` with `refreshToken`.\n",
+        "description": "Send a single `identifier` (email or username) and `password`.\nReturns a short-lived access JWT in `token` and a long-lived `refreshToken`.\nUse `token` as `Authorization: Bearer <token>` on protected routes.\nWhen `token` expires, call `POST /auth/refresh` with `refreshToken`.\nReturns **403** if the account `status` is `inactive`.\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -840,6 +851,16 @@
               }
             }
           },
+          "403": {
+            "description": "Account is inactive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiInactiveAccountError"
+                }
+              }
+            }
+          },
           "413": {
             "description": "JSON body exceeds JSON_BODY_LIMIT",
             "content": {
@@ -869,7 +890,7 @@
           "Auth"
         ],
         "summary": "Refresh access token",
-        "description": "Exchange a valid `refreshToken` for a new access `token` and rotated `refreshToken`.\nThe previous refresh token is invalidated (single-use rotation).\n",
+        "description": "Exchange a valid `refreshToken` for a new access `token` and rotated `refreshToken`.\nThe previous refresh token is invalidated (single-use rotation).\nReturns **403** if the account `status` is `inactive`.\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -907,6 +928,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiInvalidRefreshTokenError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Account is inactive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiInactiveAccountError"
                 }
               }
             }
@@ -1062,7 +1093,7 @@
           "Auth"
         ],
         "summary": "Set a new password with a reset token",
-        "description": "Use the `token` query param from the reset link emailed to the user.\nOn success, log in separately with the new password.\n",
+        "description": "Use the `token` query param from the reset link emailed to the user.\nOn success, all refresh tokens for that user are revoked server-side.\nLog in separately with the new password to obtain a new token pair.\n",
         "requestBody": {
           "required": true,
           "content": {
