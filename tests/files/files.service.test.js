@@ -37,7 +37,7 @@ describe('files service consistency', () => {
 
   it('restores storage when markArchived fails', async () => {
     const fileRecord = {
-      _id: '664a1b2c3d4e5f678901234567',
+      id: '664a1b2c3d4e5f678901234567',
       name: 'a1b2c3d4e5f678901234567890abcd12.jpg',
     };
     const archived = {

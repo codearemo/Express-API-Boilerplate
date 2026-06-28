@@ -119,7 +119,7 @@ describe('Refresh token API', () => {
         );
 
       const refreshToken = await refreshTokensRepository.createForUser(
-        registerResponse.body.data._id,
+        registerResponse.body.data.id,
       );
 
       const response = await request(app)

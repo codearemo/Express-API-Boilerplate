@@ -3,6 +3,7 @@
 // ******************************************************
 
 const config = require('../../config');
+const { getEntityId } = require('../../utils/entity-id');
 
 function buildProtectedDownloadUrl(fileId) {
   const baseUrl = config.upload.local.baseUrl.replace(/\/$/, '');
@@ -11,7 +12,7 @@ function buildProtectedDownloadUrl(fileId) {
 
 function toPublicFile(record) {
   const file = {
-    id: String(record._id),
+    id: getEntityId(record),
     url: record.url,
     name: record.name,
     originalName: record.originalName,
@@ -30,7 +31,7 @@ function toPublicFile(record) {
 
 function toArchivedFile(record, archived) {
   return {
-    id: String(record._id),
+    id: getEntityId(record),
     name: archived.name,
     archivedName: archived.archivedName,
     provider: archived.provider,

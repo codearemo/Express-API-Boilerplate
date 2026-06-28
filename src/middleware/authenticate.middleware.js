@@ -14,7 +14,7 @@ const {
  *
  * Expects: Authorization: Bearer <token>
  *
- * On success: sets req.user = { id: '<mongo user id>' } and calls next().
+ * On success: sets req.user = { id: '<user id>' } and calls next().
  * On failure: passes a 401/403 error to the global error handler.
  */
 async function authenticate(req, _res, next) {

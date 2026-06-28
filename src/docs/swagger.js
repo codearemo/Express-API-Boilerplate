@@ -55,7 +55,7 @@ const options = {
           description:
             'User object returned from auth routes (register, login, social). Does not include profilePicture — use GET /users/me for the full profile.',
           properties: {
-            _id: { type: 'string', example: '664a1b2c3d4e5f678901234' },
+            id: { type: 'string', example: '664a1b2c3d4e5f678901234' },
             firstName: { type: 'string', example: 'Jane' },
             lastName: { type: 'string', example: 'Doe' },
             username: { type: 'string', example: 'jane' },

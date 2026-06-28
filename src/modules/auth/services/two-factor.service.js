@@ -38,11 +38,11 @@ async function completeAuthentication(user) {
   assertUserIsActive(user);
   assertEmailVerified(user);
 
-  const latestUser = await usersRepository.findById(user._id);
+  const latestUser = await usersRepository.findById(user.id);
 
   if (latestUser?.twoFactorEnabled) {
     const twoFactorToken = await twoFactorChallengesRepository.createForUser(
-      user._id,
+      user.id,
       TWO_FACTOR_CHALLENGE_PURPOSES.LOGIN,
     );
 

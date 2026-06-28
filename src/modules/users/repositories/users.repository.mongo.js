@@ -5,6 +5,11 @@
 const UsersModel = require('../models/users.model.mongo');
 const { toPlainObject } = require('../users.utils');
 const { normalizeEmail } = require('../../../utils/normalize-email');
+const { withEntityId } = require('../../../utils/entity-id');
+
+function normalize(doc) {
+  return withEntityId(doc);
+}
 
 async function create(payload) {
   const doc = await UsersModel.create(payload);
@@ -13,29 +18,29 @@ async function create(payload) {
 
 async function findById(id) {
   const doc = await UsersModel.findById(id).lean();
-  return doc;
+  return normalize(doc);
 }
 
 async function findByEmail(email) {
   const doc = await UsersModel.findOne({ email: normalizeEmail(email) }).lean();
-  return doc;
+  return normalize(doc);
 }
 
 async function findByEmailWithPassword(email) {
   const doc = await UsersModel.findOne({ email: normalizeEmail(email) })
     .select('+password')
     .lean();
-  return doc;
+  return normalize(doc);
 }
 
 async function findByUsername(username) {
   const doc = await UsersModel.findOne({ username }).lean();
-  return doc;
+  return normalize(doc);
 }
 
 async function findByUsernameWithPassword(username) {
   const doc = await UsersModel.findOne({ username }).select('+password').lean();
-  return doc;
+  return normalize(doc);
 }
 
 async function updatePassword(userId, hashedPassword) {
@@ -64,7 +69,7 @@ async function findByAuthProvider(provider, providerId) {
     authProviders: { $elemMatch: { provider, providerId } },
   }).lean();
 
-  return doc;
+  return normalize(doc);
 }
 
 async function addAuthProvider(userId, provider, providerId) {
@@ -81,19 +86,19 @@ async function updateProfile(userId, fields) {
     { returnDocument: 'after', runValidators: true },
   ).lean();
 
-  return doc;
+  return normalize(doc);
 }
 
 async function findByIdWithTwoFactorSecret(id) {
   const doc = await UsersModel.findById(id).select('+twoFactorSecret').lean();
-  return doc;
+  return normalize(doc);
 }
 
 async function findByIdWithPasswordAndTwoFactorSecret(id) {
   const doc = await UsersModel.findById(id)
     .select('+password +twoFactorSecret')
     .lean();
-  return doc;
+  return normalize(doc);
 }
 
 async function enableTwoFactor(userId, encryptedSecret) {

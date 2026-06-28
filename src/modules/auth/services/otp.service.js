@@ -46,7 +46,7 @@ async function verifyOtp(email, purpose, rawOtp) {
   }
 
   if (hashOtp(rawOtp) !== record.otpHash) {
-    const updated = await emailOtpsRepository.incrementAttempts(record._id);
+    const updated = await emailOtpsRepository.incrementAttempts(record.id);
 
     if (updated.attempts >= config.otp.maxAttempts) {
       await emailOtpsRepository.deleteByEmailAndPurpose(email, purpose);

@@ -93,9 +93,9 @@ async function verifyEmail(body) {
   }
 
   await verifyOtp(email, OTP_PURPOSES.VERIFY_EMAIL, otp);
-  await usersRepository.markEmailVerified(user._id);
+  await usersRepository.markEmailVerified(user.id);
 
-  return toPublicUser(await usersRepository.findById(user._id));
+  return toPublicUser(await usersRepository.findById(user.id));
 }
 
 async function resendVerification(body) {
@@ -239,17 +239,17 @@ async function socialLogin(body) {
       // Email owner proved via the social provider. Link the account, verify
       // email, and clear any squatter password from an unverified registration.
       await usersRepository.addAuthProvider(
-        existingByEmail._id,
+        existingByEmail.id,
         profile.provider,
         profile.providerId,
       );
 
       if (!existingByEmail.emailVerified) {
-        await usersRepository.markEmailVerified(existingByEmail._id);
-        await usersRepository.clearPassword(existingByEmail._id);
+        await usersRepository.markEmailVerified(existingByEmail.id);
+        await usersRepository.clearPassword(existingByEmail.id);
       }
 
-      user = await usersRepository.findById(existingByEmail._id);
+      user = await usersRepository.findById(existingByEmail.id);
     } else {
       user = await createSocialUser(profile);
     }
@@ -291,11 +291,11 @@ async function resetPassword(body) {
   await verifyOtp(email, OTP_PURPOSES.RESET_PASSWORD, otp);
 
   await usersRepository.updatePassword(
-    user._id,
+    user.id,
     await bcrypt.hash(password, 10),
   );
 
-  await refreshTokensRepository.revokeAllForUser(user._id);
+  await refreshTokensRepository.revokeAllForUser(user.id);
 }
 
 module.exports = {

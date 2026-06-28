@@ -26,7 +26,7 @@ describe('Auth API', () => {
         },
       });
       expect(response.body.data.password).toBeUndefined();
-      expect(response.body.data._id).toBeDefined();
+      expect(response.body.data.id).toBeDefined();
     });
 
     it('returns 409 when email is already in use', async () => {
@@ -265,7 +265,7 @@ describe('Auth API', () => {
           }),
         );
 
-      const token = signAccessToken({ _id: registerResponse.body.data._id });
+      const token = signAccessToken({ id: registerResponse.body.data.id });
 
       const response = await request(app)
         .get(`${API}/users/me`)

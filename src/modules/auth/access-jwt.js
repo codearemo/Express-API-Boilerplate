@@ -15,14 +15,15 @@
 
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
+const { getEntityId } = require('../../utils/entity-id');
 
 /**
  * Build a signed access JWT for an authenticated user.
  *
- * Payload keeps only `sub` (subject) = the user's MongoDB _id.
+ * Payload keeps only `sub` (subject) = the user's id.
  * Do not put email, password, or other PII in the token.
  *
- * @param {object} user - User record from the repository (must have `_id`)
+ * @param {object} user - User record from the repository (must have `id`)
  * @returns {string} Signed JWT string for the Authorization header
  */
 function signAccessToken(user) {
@@ -30,7 +31,13 @@ function signAccessToken(user) {
     throw new Error('JWT_SECRET is not configured');
   }
 
-  return jwt.sign({ sub: user._id.toString() }, config.JWT_SECRET, {
+  const userId = getEntityId(user);
+
+  if (!userId) {
+    throw new Error('User id is required to sign an access token');
+  }
+
+  return jwt.sign({ sub: userId }, config.JWT_SECRET, {
     expiresIn: config.JWT_EXPIRES_IN,
   });
 }

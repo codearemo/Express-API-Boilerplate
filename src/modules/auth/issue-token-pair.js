@@ -19,7 +19,7 @@ const { refreshTokens: refreshTokensRepository } = require('./repositories');
 const { signAccessToken } = require('./access-jwt');
 
 async function issueAuthTokens(user) {
-  const refreshToken = await refreshTokensRepository.createForUser(user._id);
+  const refreshToken = await refreshTokensRepository.createForUser(user.id);
 
   try {
     return {

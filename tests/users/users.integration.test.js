@@ -46,7 +46,7 @@ describe('Users profile API', () => {
           }),
         );
 
-      const token = signAccessToken({ _id: registerResponse.body.data._id });
+      const token = signAccessToken({ id: registerResponse.body.data.id });
 
       const response = await request(app)
         .patch(`${API}/users/me`)

@@ -3,6 +3,7 @@
 // ******************************************************
 
 const { resolveProfilePictureForUser } = require('./users.profile');
+const { getEntityId } = require('../../utils/entity-id');
 
 /**
  * Returns a copy of a user object that is safe to send to clients.
@@ -24,9 +25,14 @@ function toPublicUser(user) {
     authProviders: _authProviders,
     profilePicture: _profilePicture,
     twoFactorSecret: _twoFactorSecret,
+    _id: _mongoId,
     ...publicUser
   } = user;
-  return publicUser;
+
+  return {
+    id: getEntityId(user),
+    ...publicUser,
+  };
 }
 
 /**
@@ -41,7 +47,7 @@ async function toPublicUserWithProfile(user) {
   }
 
   publicUser.profilePicture = await resolveProfilePictureForUser(
-    String(user._id),
+    getEntityId(user),
     user.profilePicture,
   );
 

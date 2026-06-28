@@ -48,7 +48,7 @@ async function archiveUploadedFile(userId, rawIdentifier) {
   const archived = await storage.archiveFile(fileRecord.name);
 
   try {
-    await filesRepository.markArchived(fileRecord._id, archived.archivedName);
+    await filesRepository.markArchived(fileRecord.id, archived.archivedName);
   } catch (error) {
     await storage.restoreArchived(archived);
     throw error;

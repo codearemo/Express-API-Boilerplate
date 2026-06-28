@@ -3,13 +3,14 @@
 // ******************************************************
 
 const FilesModel = require('../models/files.model.mongo');
+const { withEntityId } = require('../../../utils/entity-id');
 
 function toPlainObject(doc) {
   if (!doc) {
     return null;
   }
 
-  return doc.toObject ? doc.toObject() : doc;
+  return withEntityId(doc.toObject ? doc.toObject() : doc);
 }
 
 async function createMany(userId, files) {

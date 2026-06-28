@@ -23,7 +23,10 @@ function extractTokenFromHandshake(handshake) {
 
   const authorization = handshake.headers?.authorization;
 
-  if (typeof authorization === 'string' && authorization.startsWith('Bearer ')) {
+  if (
+    typeof authorization === 'string' &&
+    authorization.startsWith('Bearer ')
+  ) {
     return authorization.slice('Bearer '.length).trim();
   }
 
