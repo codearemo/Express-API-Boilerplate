@@ -18,6 +18,12 @@ const filesSchema = new mongoose.Schema({
     enum: ['local', 's3', 'cloudinary'],
     required: true,
   },
+  visibility: {
+    type: String,
+    enum: ['public', 'private'],
+    required: true,
+    index: true,
+  },
   status: {
     type: String,
     enum: ['active', 'archived'],

@@ -54,7 +54,7 @@ describe('Cloudinary storage driver', () => {
     destroyMock.mockResolvedValue({ result: 'ok' });
 
     await expect(
-      storage.storeFiles([sampleFile, { ...sampleFile, originalname: 'two.jpg' }]),
+      storage.storeFiles([sampleFile, { ...sampleFile, originalname: 'two.jpg' }], 'public'),
     ).rejects.toThrow('upload failed');
 
     expect(destroyMock).toHaveBeenCalledWith('my-app/file-one', {

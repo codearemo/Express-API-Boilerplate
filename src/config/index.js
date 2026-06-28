@@ -81,22 +81,10 @@ const config = {
       archivePrefix: process.env.UPLOAD_ARCHIVE_PREFIX || '_archive',
       allowedMimeTypes:
         allowedFromEnv.length > 0 ? allowedFromEnv : DEFAULT_ALLOWED_MIME_TYPES,
-      publicAccess: (() => {
-        if (process.env.UPLOAD_PUBLIC_ACCESS === 'true') {
-          return true;
-        }
-
-        if (process.env.UPLOAD_PUBLIC_ACCESS === 'false') {
-          return false;
-        }
-
-        return (
-          process.env.NODE_ENV === 'development' ||
-          process.env.NODE_ENV === 'test'
-        );
-      })(),
       local: {
         directory,
+        publicDirectory: path.join(directory, 'public'),
+        privateDirectory: path.join(directory, 'private'),
         archiveDirectory:
           process.env.UPLOAD_ARCHIVE_DIR ||
           path.join(process.cwd(), 'uploads-archive'),

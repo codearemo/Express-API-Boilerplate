@@ -20,10 +20,11 @@ function toPublicFile(record) {
     size: record.size,
     encoding: record.encoding,
     provider: record.provider,
+    visibility: record.visibility,
   };
 
-  if (!config.upload.publicAccess) {
-    file.url = buildProtectedDownloadUrl(file.id);
+  if (record.visibility === 'private') {
+    file.downloadUrl = buildProtectedDownloadUrl(file.id);
   }
 
   return file;
@@ -35,6 +36,7 @@ function toArchivedFile(record, archived) {
     name: archived.name,
     archivedName: archived.archivedName,
     provider: archived.provider,
+    visibility: record.visibility,
   };
 }
 

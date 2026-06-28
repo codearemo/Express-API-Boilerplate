@@ -38,6 +38,12 @@ async function assertAssignableProfilePicture(userId, fileId) {
     throw error;
   }
 
+  if (file.visibility !== 'public') {
+    const error = new Error('Profile picture must be a public file');
+    error.statusCode = 400;
+    throw error;
+  }
+
   return fileId;
 }
 

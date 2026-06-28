@@ -57,7 +57,7 @@ function uploadBuffer(file) {
   });
 }
 
-async function uploadOne(file) {
+async function uploadOne(file, visibility) {
   const result = await uploadBuffer(file);
 
   return buildFileMetadata({
@@ -68,6 +68,7 @@ async function uploadOne(file) {
     size: result.bytes ?? file.size,
     encoding: file.encoding,
     provider: 'cloudinary',
+    visibility,
   });
 }
 
@@ -75,8 +76,12 @@ async function rollbackOne(metadata) {
   await removeFile(metadata);
 }
 
-async function storeFiles(files) {
-  return storeFilesWithRollback(files, uploadOne, rollbackOne);
+async function storeFiles(files, visibility) {
+  return storeFilesWithRollback(
+    files,
+    (file) => uploadOne(file, visibility),
+    rollbackOne,
+  );
 }
 
 async function removeFile({ name }) {

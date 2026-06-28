@@ -1,5 +1,6 @@
 const express = require('express');
 const authenticate = require('../../middleware/authenticate.middleware');
+const requireUploadVisibility = require('../../middleware/require-upload-visibility.middleware');
 const { uploadLimiter } = require('../../middleware/rate-limit.middleware');
 const {
   uploadFiles: uploadFilesMiddleware,
@@ -12,6 +13,7 @@ router.post(
   '/',
   authenticate,
   uploadLimiter,
+  requireUploadVisibility,
   uploadFilesMiddleware,
   filesController.uploadFiles,
 );

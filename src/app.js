@@ -32,18 +32,12 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(globalLimiter);
 }
 
-// Local disk files — only served directly when UPLOAD_PUBLIC_ACCESS=true
+// Local disk — public files only; private files use the authenticated download route
 if (config.uploadDriver === 'local') {
-  const localUploadsStatic = express.static(config.upload.local.directory);
-
-  app.use('/uploads', (req, res, next) => {
-    if (!config.upload.publicAccess) {
-      next();
-      return;
-    }
-
-    localUploadsStatic(req, res, next);
-  });
+  app.use(
+    '/uploads/public',
+    express.static(config.upload.local.publicDirectory),
+  );
 }
 
 // Swagger UI — rebuilds spec on each request so paths.js edits show after refresh

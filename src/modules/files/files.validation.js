@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { z } = require('zod');
+const { FILE_VISIBILITIES } = require('../../constants/upload');
 
 const fileNameSchema = z
   .string({ error: 'File name is required' })
@@ -26,6 +27,29 @@ function validateFileName(name) {
   return result.data;
 }
 
+const uploadVisibilitySchema = z.enum(FILE_VISIBILITIES, {
+  message: `visibility must be one of: ${FILE_VISIBILITIES.join(', ')}`,
+});
+
+function validateUploadVisibility(value) {
+  if (value === undefined || value === null || String(value).trim() === '') {
+    const error = new Error('Validation failed');
+    error.statusCode = 400;
+    error.details = [
+      { field: 'visibility', message: 'visibility is required' },
+    ];
+    throw error;
+  }
+
+  const result = uploadVisibilitySchema.safeParse(value);
+
+  if (!result.success) {
+    throw formatZodError(result.error, 'visibility');
+  }
+
+  return result.data;
+}
+
 function isMongoObjectId(value) {
   if (!value || typeof value !== 'string') {
     return false;
@@ -39,5 +63,6 @@ function isMongoObjectId(value) {
 
 module.exports = {
   validateFileName,
+  validateUploadVisibility,
   isMongoObjectId,
 };

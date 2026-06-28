@@ -8,17 +8,36 @@ const config = require('../config');
 const { UPLOAD_FIELD_NAME } = require('../constants/upload');
 const { buildStoredFilename } = require('../utils/upload-filename');
 
-function ensureUploadDirectory() {
-  fs.mkdirSync(config.upload.local.directory, { recursive: true });
+function ensureUploadDirectory(visibility) {
+  const directory =
+    visibility === 'public'
+      ? config.upload.local.publicDirectory
+      : config.upload.local.privateDirectory;
+
+  fs.mkdirSync(directory, { recursive: true });
 }
 
 function createMulterStorage() {
   if (config.uploadDriver === 'local') {
     return multer.diskStorage({
-      destination(_req, _file, cb) {
+      destination(req, _file, cb) {
         try {
-          ensureUploadDirectory();
-          cb(null, config.upload.local.directory);
+          const visibility = req.uploadVisibility;
+
+          if (!visibility) {
+            const error = new Error('visibility is required');
+            error.statusCode = 400;
+            cb(error);
+            return;
+          }
+
+          ensureUploadDirectory(visibility);
+          cb(
+            null,
+            visibility === 'public'
+              ? config.upload.local.publicDirectory
+              : config.upload.local.privateDirectory,
+          );
         } catch (error) {
           cb(error);
         }

@@ -149,7 +149,7 @@ describe('Users profile API', () => {
       const token = await getAuthToken(app);
 
       const uploadResponse = await request(app)
-        .post(`${API}/uploads`)
+        .post(`${API}/uploads?visibility=public`)
         .set('Authorization', `Bearer ${token}`)
         .attach('files', JPEG_BYTES, 'avatar.jpg');
 
@@ -182,7 +182,7 @@ describe('Users profile API', () => {
       const token = await getAuthToken(app);
 
       const uploadResponse = await request(app)
-        .post(`${API}/uploads`)
+        .post(`${API}/uploads?visibility=public`)
         .set('Authorization', `Bearer ${token}`)
         .attach('files', JPEG_BYTES, 'avatar.jpg');
 
@@ -207,7 +207,7 @@ describe('Users profile API', () => {
       const otherToken = await getSecondUserToken(app);
 
       const uploadResponse = await request(app)
-        .post(`${API}/uploads`)
+        .post(`${API}/uploads?visibility=public`)
         .set('Authorization', `Bearer ${ownerToken}`)
         .attach('files', JPEG_BYTES, 'avatar.jpg');
 
@@ -222,11 +222,30 @@ describe('Users profile API', () => {
       expect(response.body.message).toBe('Invalid profile picture');
     });
 
+    it('returns 400 when profilePicture is a private file', async () => {
+      const token = await getAuthToken(app);
+
+      const uploadResponse = await request(app)
+        .post(`${API}/uploads?visibility=private`)
+        .set('Authorization', `Bearer ${token}`)
+        .attach('files', JPEG_BYTES, 'avatar.jpg');
+
+      const fileId = uploadResponse.body.data[0].id;
+
+      const response = await request(app)
+        .patch(`${API}/users/me`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ profilePicture: fileId });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Profile picture must be a public file');
+    });
+
     it('returns 400 when profilePicture is not an image', async () => {
       const token = await getAuthToken(app);
 
       const uploadResponse = await request(app)
-        .post(`${API}/uploads`)
+        .post(`${API}/uploads?visibility=public`)
         .set('Authorization', `Bearer ${token}`)
         .attach('files', PDF_BYTES, 'notes.pdf');
 

@@ -22,8 +22,8 @@ function getStorageDriver() {
   return require(modulePath);
 }
 
-async function storeFiles(files) {
-  return getStorageDriver().storeFiles(files);
+async function storeFiles(files, visibility) {
+  return getStorageDriver().storeFiles(files, visibility);
 }
 
 async function removeFiles(files) {
@@ -32,8 +32,8 @@ async function removeFiles(files) {
   );
 }
 
-async function archiveFile(name) {
-  return getStorageDriver().archiveFile(name);
+async function archiveFile(name, visibility) {
+  return getStorageDriver().archiveFile(name, visibility);
 }
 
 async function restoreArchived(archived) {

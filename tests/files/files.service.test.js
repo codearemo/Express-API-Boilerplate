@@ -27,10 +27,17 @@ describe('files service consistency', () => {
     );
 
     await expect(
-      filesService.processUploadedFiles('664a1b2c3d4e5f678901234567', [
-        { originalname: 'photo.jpg' },
-      ]),
+      filesService.processUploadedFiles(
+        '664a1b2c3d4e5f678901234567',
+        [{ originalname: 'photo.jpg' }],
+        'public',
+      ),
     ).rejects.toThrow('db failed');
+
+    expect(storage.storeFiles).toHaveBeenCalledWith(
+      [{ originalname: 'photo.jpg' }],
+      'public',
+    );
 
     expect(storage.removeFiles).toHaveBeenCalledWith(storedFiles);
   });
@@ -39,6 +46,7 @@ describe('files service consistency', () => {
     const fileRecord = {
       id: '664a1b2c3d4e5f678901234567',
       name: 'a1b2c3d4e5f678901234567890abcd12.jpg',
+      visibility: 'public',
     };
     const archived = {
       name: fileRecord.name,
@@ -62,6 +70,9 @@ describe('files service consistency', () => {
       ),
     ).rejects.toThrow('db failed');
 
-    expect(storage.restoreArchived).toHaveBeenCalledWith(archived);
+    expect(storage.restoreArchived).toHaveBeenCalledWith({
+      ...archived,
+      visibility: 'public',
+    });
   });
 });

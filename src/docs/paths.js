@@ -586,10 +586,19 @@
  *     description: |
  *       Multipart upload using field name `files` (repeat for multiple files).
  *       Storage backend is selected via `UPLOAD_DRIVER` (`local`, `s3`, `cloudinary`).
- *       When `UPLOAD_PUBLIC_ACCESS=false`, response `url` values point to
- *       `GET /uploads/{id}/download` (JWT required).
+ *       Query parameter `visibility` is required (`public` or `private`).
+ *       Public files are served directly from `url`. Private files include
+ *       `downloadUrl` for authenticated download via JWT.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: visibility
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [public, private]
+ *         description: Whether uploaded files can be fetched without authentication
  *     requestBody:
  *       required: true
  *       content:
@@ -642,7 +651,7 @@
  *     summary: Download an active uploaded file
  *     description: |
  *       Streams an active file to the client. Requires a valid JWT.
- *       Used when `UPLOAD_PUBLIC_ACCESS=false` (default in production).
+ *       Used for files uploaded with `visibility=private`.
  *       Pass the file `id` from the upload response (recommended), or the stored `name`.
  *     security:
  *       - bearerAuth: []

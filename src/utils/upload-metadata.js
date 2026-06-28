@@ -11,6 +11,7 @@
  * @param {number} params.size
  * @param {string} params.encoding
  * @param {string} [params.provider] - local | s3 | cloudinary
+ * @param {'public' | 'private'} [params.visibility]
  */
 function buildFileMetadata({
   url,
@@ -20,6 +21,7 @@ function buildFileMetadata({
   size,
   encoding,
   provider,
+  visibility,
 }) {
   const metadata = {
     url,
@@ -32,6 +34,10 @@ function buildFileMetadata({
 
   if (provider) {
     metadata.provider = provider;
+  }
+
+  if (visibility) {
+    metadata.visibility = visibility;
   }
 
   return metadata;

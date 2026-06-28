@@ -440,7 +440,23 @@ const options = {
             url: {
               type: 'string',
               format: 'uri',
-              example: 'http://localhost:3000/uploads/a1b2c3d4e5f6.jpg',
+              description:
+                'Direct URL to the stored file (e.g. /uploads/... for local, CDN for cloud drivers)',
+              example: 'http://localhost:3000/uploads/public/a1b2c3d4e5f6.jpg',
+            },
+            visibility: {
+              type: 'string',
+              enum: ['public', 'private'],
+              example: 'public',
+            },
+            downloadUrl: {
+              type: 'string',
+              format: 'uri',
+              nullable: true,
+              description:
+                'Present when visibility is private — JWT-protected download route',
+              example:
+                'http://localhost:3000/api/v1/uploads/664a1b2c3d4e5f678901234567/download',
             },
             name: {
               type: 'string',

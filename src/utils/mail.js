@@ -65,7 +65,7 @@ async function sendOtpEmail({ to, purpose, otp }) {
 
   if (!from || !from.includes('@')) {
     throw new Error(
-      'SMTP_FROM must be set to a verified sender email (e.g. you@example.com).',
+      'SMTP_FROM must be set to a sender address that contains an email (e.g. "My App <noreply@example.com>").',
     );
   }
 

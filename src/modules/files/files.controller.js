@@ -8,6 +8,7 @@ async function uploadFiles(req, res, next) {
     const files = await filesService.processUploadedFiles(
       req.user.id,
       req.files,
+      req.uploadVisibility,
     );
 
     sendSuccess(res, {

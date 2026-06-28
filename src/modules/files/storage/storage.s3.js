@@ -48,7 +48,7 @@ function buildPublicUrl(key) {
   return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 }
 
-async function uploadOne(file) {
+async function uploadOne(file, visibility) {
   const { bucket } = config.s3;
   const client = getS3Client();
   const key = buildStoredFilename(file.originalname);
@@ -70,6 +70,7 @@ async function uploadOne(file) {
     size: file.size,
     encoding: file.encoding,
     provider: 's3',
+    visibility,
   });
 }
 
@@ -77,8 +78,12 @@ async function rollbackOne(metadata) {
   await removeFile(metadata);
 }
 
-async function storeFiles(files) {
-  return storeFilesWithRollback(files, uploadOne, rollbackOne);
+async function storeFiles(files, visibility) {
+  return storeFilesWithRollback(
+    files,
+    (file) => uploadOne(file, visibility),
+    rollbackOne,
+  );
 }
 
 async function removeFile({ name }) {

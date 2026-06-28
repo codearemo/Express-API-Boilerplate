@@ -163,13 +163,14 @@ SQL_DATABASE=my_app
 SQL_USER=root
 SQL_PASSWORD=
 
-# Password reset email (SMTP)
+# Password reset / verification email (SMTP)
+# SMTP_FROM must include a real email address your provider accepts as a sender.
 SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=your-smtp-user
+SMTP_USER=your-smtp-username
 SMTP_PASS=your-smtp-password
-SMTP_FROM="App <noreply@example.com>"
+SMTP_FROM="My App <noreply@example.com>"
 OTP_EXPIRES_MINUTES=10
 OTP_MAX_ATTEMPTS=5
 
@@ -215,7 +216,7 @@ RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS=300000
 | `SMTP_SECURE`                              | No       | Use TLS (`true`/`false`, default: `false`)                                                                                               |
 | `SMTP_USER`                                | Yes†††   | SMTP username                                                                                                                            |
 | `SMTP_PASS`                                | Yes†††   | SMTP password                                                                                                                            |
-| `SMTP_FROM`                                | No       | From address (defaults to `SMTP_USER`)                                                                                                   |
+| `SMTP_FROM`                                | Yes†††   | From address with a real email (e.g. `"My App <noreply@example.com>"`). Falls back to `SMTP_USER` when that value is an email address   |
 | `OTP_EXPIRES_MINUTES`                      | No       | OTP expiry for verify-email and reset-password (default: `10`)                                                                           |
 | `OTP_MAX_ATTEMPTS`                         | No       | Max failed OTP attempts before invalidation (default: `5`)                                                                               |
 | `RATE_LIMIT_GLOBAL_MAX`                    | No       | Max requests per IP across all routes (default: `200`)                                                                                   |
@@ -239,7 +240,6 @@ RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS=300000
 | `RATE_LIMIT_SOCIAL_LOGIN_MAX`              | No       | Max social login requests per IP (default: `10`)                                                                                         |
 | `RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS`        | No       | Social login window in ms (default: `300000` = 5 min)                                                                                    |
 | `UPLOAD_DRIVER`                            | No       | Storage backend: `local`, `s3`, or `cloudinary` (default: `local`)                                                                       |
-| `UPLOAD_PUBLIC_ACCESS`                     | No       | Serve local files at `/uploads` without JWT (default: `true` only when `NODE_ENV` is `development` or `test`; set explicitly in staging) |
 | `UPLOAD_MAX_FILE_SIZE`                     | No       | Max bytes per file (default: `5242880` = 5MB)                                                                                            |
 | `UPLOAD_MAX_FILES`                         | No       | Max files per request (default: `10`)                                                                                                    |
 | `UPLOAD_ALLOWED_MIME_TYPES`                | No       | Comma-separated allowlist (default: JPEG, PNG, GIF, WebP, PDF)                                                                           |
@@ -261,7 +261,7 @@ RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS=300000
 ** Required when `UPLOAD_DRIVER=cloudinary`  
 † Required when `DB_DRIVER=mongo`  
 †† Required when `DB_DRIVER=sql`  
-††† Required when using forgot-password (real SMTP in dev and prod)
+††† Required when using forgot-password or email verification (real SMTP in dev and prod)
 
 ### Run the server
 
@@ -304,8 +304,8 @@ Interactive docs: [http://localhost:3000/api-docs](http://localhost:3000/api-doc
 | `POST`   | `/api/v1/auth/2fa/confirm`         | Bearer JWT | Enable 2FA with a code from the authenticator app                |
 | `POST`   | `/api/v1/auth/2fa/verify`          | No         | Complete login after password/social when 2FA is enabled         |
 | `POST`   | `/api/v1/auth/2fa/disable`         | Bearer JWT | Disable 2FA (TOTP code + password if the account has one)        |
-| `POST`   | `/api/v1/uploads`                  | Bearer JWT | Upload one or more files (`multipart/form-data`, field `files`)  |
-| `GET`    | `/api/v1/uploads/:fileId/download` | Bearer JWT | Download an active file (used when `UPLOAD_PUBLIC_ACCESS=false`) |
+| `POST`   | `/api/v1/uploads?visibility=public\|private` | Bearer JWT | Upload files — `visibility` query param required               |
+| `GET`    | `/api/v1/uploads/:fileId/download`           | Bearer JWT | Download a private file (owner only)                             |
 | `DELETE` | `/api/v1/uploads/:fileId`          | Bearer JWT | Soft-delete by `id` (recommended) or `name` from upload response |
 | `GET`    | `/api/v1/users/me`                 | Bearer JWT | Get logged-in user profile                                       |
 | `PATCH`  | `/api/v1/users/me`                 | Bearer JWT | Update logged-in user profile                                    |
@@ -580,8 +580,10 @@ Content-Type: application/json
 
 Send one or more files as `multipart/form-data` with field name `files` (repeat the field for multiple files). Requires JWT.
 
+**Query parameter `visibility` is required:** `public` or `private`.
+
 ```http
-POST /api/v1/uploads
+POST /api/v1/uploads?visibility=public
 Authorization: Bearer <token>
 Content-Type: multipart/form-data
 
@@ -597,15 +599,26 @@ files: <photo-two.jpg>
   "data": [
     {
       "id": "664a1b2c3d4e5f678901234567",
-      "url": "http://localhost:3000/uploads/a1b2c3d4e5f678901234567890abcd12.jpg",
+      "url": "http://localhost:3000/uploads/public/a1b2c3d4e5f678901234567890abcd12.jpg",
       "name": "a1b2c3d4e5f678901234567890abcd12.jpg",
       "originalName": "photo-one.jpg",
       "mimeType": "image/jpeg",
       "size": 20480,
       "encoding": "7bit",
-      "provider": "local"
+      "provider": "local",
+      "visibility": "public"
     }
   ]
+}
+```
+
+Private uploads include `downloadUrl` for JWT-protected download:
+
+```json
+{
+  "visibility": "private",
+  "url": "http://localhost:3000/uploads/private/a1b2c3d4e5f678901234567890abcd12.pdf",
+  "downloadUrl": "http://localhost:3000/api/v1/uploads/664a1b2c3d4e5f678901234567/download"
 }
 ```
 
@@ -614,12 +627,12 @@ Set `UPLOAD_DRIVER` in `.env` to pick the storage backend (same idea as `DB_DRIV
 
 | Driver       | Behavior                                                                                                                                      |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `local`      | Files saved under `UPLOAD_DIR`. Public `/uploads/<name>` when `UPLOAD_PUBLIC_ACCESS=true`; otherwise use `GET /uploads/:id/download` with JWT |
-| `s3`         | Files uploaded to AWS S3; response URLs point to S3 (or `S3_PUBLIC_URL_BASE`) when public; otherwise auth-protected download route            |
-| `cloudinary` | Files uploaded to Cloudinary; response URLs are Cloudinary CDN links when public; otherwise auth-protected download route                     |
+| `local`      | Public files under `UPLOAD_DIR/public` (served at `/uploads/public/...`). Private files under `UPLOAD_DIR/private` (download via JWT only).   |
+| `s3`         | Files uploaded to AWS S3. Public files use direct URLs; private files include `downloadUrl`.                                                 |
+| `cloudinary` | Files uploaded to Cloudinary. Public files use CDN URLs; private files include `downloadUrl`.                                                   |
 
 
-**Default:** `UPLOAD_PUBLIC_ACCESS` is `true` only when `NODE_ENV` is `development` or `test`. For staging and production, set `UPLOAD_PUBLIC_ACCESS=false` explicitly. Anonymous users cannot fetch files by URL; only the **uploader** can download active files via `GET /api/v1/uploads/:fileId/download` with a valid JWT.
+Use `visibility=public` for feed images and avatars (`<img src="...">`). Use `visibility=private` for documents and attachments (fetch `downloadUrl` with JWT).
 
 Default limits: **5MB per file**, **10 files** per request. Allowed types: JPEG, PNG, GIF, WebP, PDF.
 

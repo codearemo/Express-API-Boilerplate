@@ -40,7 +40,7 @@ describe('S3 storage driver', () => {
       .mockResolvedValueOnce({});
 
     await expect(
-      storage.storeFiles([sampleFile, { ...sampleFile, originalname: 'two.jpg' }]),
+      storage.storeFiles([sampleFile, { ...sampleFile, originalname: 'two.jpg' }], 'public'),
     ).rejects.toThrow('upload failed');
 
     expect(sendMock).toHaveBeenCalledTimes(3);

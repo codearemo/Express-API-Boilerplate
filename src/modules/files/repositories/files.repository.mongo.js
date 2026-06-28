@@ -5,6 +5,10 @@
 const FilesModel = require('../models/files.model.mongo');
 const { withEntityId } = require('../../../utils/entity-id');
 
+function normalize(doc) {
+  return withEntityId(doc);
+}
+
 function toPlainObject(doc) {
   if (!doc) {
     return null;
@@ -24,6 +28,7 @@ async function createMany(userId, files) {
       encoding: file.encoding,
       url: file.url,
       provider: file.provider,
+      visibility: file.visibility,
       status: 'active',
     })),
   );
@@ -38,7 +43,7 @@ async function findActiveByNameAndUserId(name, userId) {
     status: 'active',
   }).lean();
 
-  return doc;
+  return normalize(doc);
 }
 
 async function findActiveByIdAndUserId(id, userId) {
@@ -48,7 +53,7 @@ async function findActiveByIdAndUserId(id, userId) {
     status: 'active',
   }).lean();
 
-  return doc;
+  return normalize(doc);
 }
 
 async function findActiveById(id) {
@@ -57,7 +62,7 @@ async function findActiveById(id) {
     status: 'active',
   }).lean();
 
-  return doc;
+  return normalize(doc);
 }
 
 async function findActiveByName(name) {
@@ -66,7 +71,7 @@ async function findActiveByName(name) {
     status: 'active',
   }).lean();
 
-  return doc;
+  return normalize(doc);
 }
 
 async function markArchived(fileId, archivedName) {
@@ -81,7 +86,7 @@ async function markArchived(fileId, archivedName) {
     { returnDocument: 'after' },
   ).lean();
 
-  return doc;
+  return normalize(doc);
 }
 
 module.exports = {

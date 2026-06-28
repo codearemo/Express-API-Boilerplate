@@ -18,14 +18,14 @@ async function findActiveFileRecord(userId, rawIdentifier) {
   return filesRepository.findActiveByNameAndUserId(name, userId);
 }
 
-async function processUploadedFiles(userId, files) {
+async function processUploadedFiles(userId, files, visibility) {
   if (!files?.length) {
     const error = new Error('At least one file is required');
     error.statusCode = 400;
     throw error;
   }
 
-  const storedFiles = await storage.storeFiles(files);
+  const storedFiles = await storage.storeFiles(files, visibility);
 
   try {
     const records = await filesRepository.createMany(userId, storedFiles);
@@ -45,12 +45,18 @@ async function archiveUploadedFile(userId, rawIdentifier) {
     throw error;
   }
 
-  const archived = await storage.archiveFile(fileRecord.name);
+  const archived = await storage.archiveFile(
+    fileRecord.name,
+    fileRecord.visibility,
+  );
 
   try {
     await filesRepository.markArchived(fileRecord.id, archived.archivedName);
   } catch (error) {
-    await storage.restoreArchived(archived);
+    await storage.restoreArchived({
+      ...archived,
+      visibility: fileRecord.visibility,
+    });
     throw error;
   }
 

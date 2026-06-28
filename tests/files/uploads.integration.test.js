@@ -4,15 +4,16 @@ const request = require('supertest');
 const app = require('../../src/app');
 const config = require('../../src/config');
 const filesRepository = require('../../src/modules/files/repositories');
-const { getAuthToken, validRegisterPayload, VALID_PASSWORD, getLatestOtp } = require('../helpers');
+const {
+  getAuthToken,
+  validRegisterPayload,
+  VALID_PASSWORD,
+  getLatestOtp,
+  JPEG_BYTES,
+} = require('../helpers');
 const { OTP_PURPOSES } = require('../../src/constants/otp');
 
 const API = '/api/v1';
-
-// Minimal valid JPEG header bytes for mime detection in tests
-const JPEG_BYTES = Buffer.from([
-  0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
-]);
 
 async function getSecondUserToken() {
   await request(app)
@@ -41,28 +42,42 @@ async function getSecondUserToken() {
 describe('POST /uploads', () => {
   it('returns 401 without a token', async () => {
     const response = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=public`)
       .attach('files', JPEG_BYTES, 'photo.jpg');
 
     expect(response.status).toBe(401);
+  });
+
+  it('returns 400 when visibility is missing', async () => {
+    const token = await getAuthToken(app);
+
+    const response = await request(app)
+      .post(`${API}/uploads`)
+      .set('Authorization', `Bearer ${token}`)
+      .attach('files', JPEG_BYTES, 'photo.jpg');
+
+    expect(response.status).toBe(400);
+    expect(response.body.details).toEqual([
+      { field: 'visibility', message: 'visibility is required' },
+    ]);
   });
 
   it('returns 400 when no files are sent', async () => {
     const token = await getAuthToken(app);
 
     const response = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=public`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe('At least one file is required');
   });
 
-  it('uploads multiple files and returns metadata for each', async () => {
+  it('uploads multiple public files and returns metadata for each', async () => {
     const token = await getAuthToken(app);
 
     const response = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=public`)
       .set('Authorization', `Bearer ${token}`)
       .attach('files', JPEG_BYTES, 'photo-one.jpg')
       .attach('files', JPEG_BYTES, 'photo-two.jpg');
@@ -77,13 +92,15 @@ describe('POST /uploads', () => {
       encoding: '7bit',
       size: expect.any(Number),
       provider: 'local',
+      visibility: 'public',
       name: expect.stringMatching(/^[a-f0-9]{32}\.jpg$/),
-      url: expect.stringMatching(/\/uploads\/[a-f0-9]{32}\.jpg$/),
+      url: expect.stringMatching(/\/uploads\/public\/[a-f0-9]{32}\.jpg$/),
     });
+    expect(response.body.data[0].downloadUrl).toBeUndefined();
     expect(response.body.data[1].originalName).toBe('photo-two.jpg');
 
     const filePath = path.join(
-      config.upload.local.directory,
+      config.upload.local.publicDirectory,
       response.body.data[0].name,
     );
     expect(fs.existsSync(filePath)).toBe(true);
@@ -91,13 +108,13 @@ describe('POST /uploads', () => {
 
   it('removes stored files when the database write fails', async () => {
     const token = await getAuthToken(app);
-    const filesBefore = fs.readdirSync(config.upload.local.directory);
+    const filesBefore = fs.readdirSync(config.upload.local.publicDirectory);
     const createManySpy = vi
       .spyOn(filesRepository, 'createMany')
       .mockRejectedValueOnce(new Error('db failed'));
 
     const response = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=public`)
       .set('Authorization', `Bearer ${token}`)
       .attach('files', JPEG_BYTES, 'photo.jpg');
 
@@ -105,7 +122,7 @@ describe('POST /uploads', () => {
 
     expect(response.status).toBe(500);
 
-    const filesAfter = fs.readdirSync(config.upload.local.directory);
+    const filesAfter = fs.readdirSync(config.upload.local.publicDirectory);
     expect(filesAfter).toEqual(filesBefore);
   });
 
@@ -113,7 +130,7 @@ describe('POST /uploads', () => {
     const token = await getAuthToken(app);
 
     const response = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=public`)
       .set('Authorization', `Bearer ${token}`)
       .attach('files', Buffer.from('not an image'), 'notes.txt');
 
@@ -135,14 +152,14 @@ describe('DELETE /uploads/:fileId', () => {
     const token = await getAuthToken(app);
 
     const uploadResponse = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=public`)
       .set('Authorization', `Bearer ${token}`)
       .attach('files', JPEG_BYTES, 'photo.jpg');
 
     expect(uploadResponse.status).toBe(201);
 
     const { id, name } = uploadResponse.body.data[0];
-    const activePath = path.join(config.upload.local.directory, name);
+    const activePath = path.join(config.upload.local.publicDirectory, name);
     const archivePath = path.join(config.upload.local.archiveDirectory, name);
 
     expect(fs.existsSync(activePath)).toBe(true);
@@ -158,11 +175,12 @@ describe('DELETE /uploads/:fileId', () => {
       name,
       archivedName: `_archive/${name}`,
       provider: 'local',
+      visibility: 'public',
     });
     expect(fs.existsSync(activePath)).toBe(false);
     expect(fs.existsSync(archivePath)).toBe(true);
 
-    const publicResponse = await request(app).get(`/uploads/${name}`);
+    const publicResponse = await request(app).get(`/uploads/public/${name}`);
     expect(publicResponse.status).toBe(404);
   });
 
@@ -170,7 +188,7 @@ describe('DELETE /uploads/:fileId', () => {
     const token = await getAuthToken(app);
 
     const uploadResponse = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=public`)
       .set('Authorization', `Bearer ${token}`)
       .attach('files', JPEG_BYTES, 'photo.jpg');
 
@@ -182,7 +200,7 @@ describe('DELETE /uploads/:fileId', () => {
 
     expect(archiveResponse.status).toBe(200);
     expect(archiveResponse.body.data.id).toBe(id);
-    expect(fs.existsSync(path.join(config.upload.local.directory, name))).toBe(
+    expect(fs.existsSync(path.join(config.upload.local.publicDirectory, name))).toBe(
       false,
     );
   });
@@ -192,7 +210,7 @@ describe('DELETE /uploads/:fileId', () => {
     const otherToken = await getSecondUserToken();
 
     const uploadResponse = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=public`)
       .set('Authorization', `Bearer ${ownerToken}`)
       .attach('files', JPEG_BYTES, 'photo.jpg');
 
@@ -210,12 +228,12 @@ describe('DELETE /uploads/:fileId', () => {
     const token = await getAuthToken(app);
 
     const uploadResponse = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=public`)
       .set('Authorization', `Bearer ${token}`)
       .attach('files', JPEG_BYTES, 'photo.jpg');
 
     const { name } = uploadResponse.body.data[0];
-    const activePath = path.join(config.upload.local.directory, name);
+    const activePath = path.join(config.upload.local.publicDirectory, name);
     const markArchivedSpy = vi
       .spyOn(filesRepository, 'markArchived')
       .mockRejectedValueOnce(new Error('db failed'));
@@ -245,41 +263,32 @@ describe('DELETE /uploads/:fileId', () => {
   });
 });
 
-describe('protected file access', () => {
-  const previousPublicAccess = process.env.UPLOAD_PUBLIC_ACCESS;
-
-  beforeAll(() => {
-    process.env.UPLOAD_PUBLIC_ACCESS = 'false';
-  });
-
-  afterAll(() => {
-    if (previousPublicAccess === undefined) {
-      delete process.env.UPLOAD_PUBLIC_ACCESS;
-    } else {
-      process.env.UPLOAD_PUBLIC_ACCESS = previousPublicAccess;
-    }
-  });
-
-  it('returns auth-protected download URLs and blocks anonymous access', async () => {
+describe('private file access', () => {
+  it('returns downloadUrl, blocks anonymous access, and allows owner download', async () => {
     const token = await getAuthToken(app);
 
     const uploadResponse = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=private`)
       .set('Authorization', `Bearer ${token}`)
       .attach('files', JPEG_BYTES, 'protected.jpg');
 
     expect(uploadResponse.status).toBe(201);
     expect(uploadResponse.body.data[0].url).toMatch(
+      /\/uploads\/private\/[a-f0-9]{32}\.jpg$/,
+    );
+    expect(uploadResponse.body.data[0].downloadUrl).toMatch(
       /\/api\/v1\/uploads\/[a-f0-9]{24}\/download$/,
     );
 
-    const downloadPath = new URL(uploadResponse.body.data[0].url).pathname;
+    const downloadPath = new URL(
+      uploadResponse.body.data[0].downloadUrl,
+    ).pathname;
     const fileName = uploadResponse.body.data[0].name;
 
     const unauthenticated = await request(app).get(downloadPath);
     expect(unauthenticated.status).toBe(401);
 
-    const publicStatic = await request(app).get(`/uploads/${fileName}`);
+    const publicStatic = await request(app).get(`/uploads/private/${fileName}`);
     expect(publicStatic.status).toBe(404);
 
     const authenticated = await request(app)
@@ -295,13 +304,15 @@ describe('protected file access', () => {
     const otherToken = await getSecondUserToken();
 
     const uploadResponse = await request(app)
-      .post(`${API}/uploads`)
+      .post(`${API}/uploads?visibility=private`)
       .set('Authorization', `Bearer ${ownerToken}`)
       .attach('files', JPEG_BYTES, 'protected-other.jpg');
 
     expect(uploadResponse.status).toBe(201);
 
-    const downloadPath = new URL(uploadResponse.body.data[0].url).pathname;
+    const downloadPath = new URL(
+      uploadResponse.body.data[0].downloadUrl,
+    ).pathname;
 
     const response = await request(app)
       .get(downloadPath)

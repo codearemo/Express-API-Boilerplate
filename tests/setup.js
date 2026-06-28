@@ -11,6 +11,7 @@ process.env.DB_DRIVER = 'mongo';
 
 const os = require('os');
 const path = require('path');
+const fs = require('fs');
 
 process.env.UPLOAD_DIR = path.join(os.tmpdir(), 'api-boilerplate-test-uploads');
 process.env.UPLOAD_ARCHIVE_DIR = path.join(
@@ -18,6 +19,10 @@ process.env.UPLOAD_ARCHIVE_DIR = path.join(
   'api-boilerplate-test-uploads-archive',
 );
 process.env.UPLOAD_DRIVER = 'local';
+
+fs.mkdirSync(path.join(process.env.UPLOAD_DIR, 'public'), { recursive: true });
+fs.mkdirSync(path.join(process.env.UPLOAD_DIR, 'private'), { recursive: true });
+fs.mkdirSync(process.env.UPLOAD_ARCHIVE_DIR, { recursive: true });
 
 const { MongoMemoryServer } = require('mongodb-memory-server');
 

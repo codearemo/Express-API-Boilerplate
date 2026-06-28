@@ -57,9 +57,6 @@ async function verifyRegisteredUser(app, email = 'jane@example.com') {
   return response.body.data;
 }
 
-/**
- * Register a user, verify email, and return a JWT for protected route tests.
- */
 async function getAuthToken(app) {
   const registerResponse = await request(app)
     .post(`${API}/auth/register`)
@@ -86,6 +83,30 @@ async function getAuthToken(app) {
   return loginResponse.body.data.token;
 }
 
+const JPEG_BYTES = Buffer.from([
+  0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+]);
+
+/**
+ * Upload a file in tests. `visibility` query param is required by the API.
+ */
+async function uploadTestFile(
+  app,
+  token,
+  {
+    buffer = JPEG_BYTES,
+    filename = 'photo.jpg',
+    visibility = 'public',
+  } = {},
+) {
+  const response = await request(app)
+    .post(`${API}/uploads?visibility=${visibility}`)
+    .set('Authorization', `Bearer ${token}`)
+    .attach('files', buffer, filename);
+
+  return response;
+}
+
 module.exports = {
   validRegisterPayload,
   VALID_PASSWORD,
@@ -93,4 +114,6 @@ module.exports = {
   getLatestOtp,
   verifyRegisteredUser,
   getAuthToken,
+  uploadTestFile,
+  JPEG_BYTES,
 };
