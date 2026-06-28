@@ -1,7 +1,7 @@
 {
   "item": [
     {
-      "id": "37905958-bf3f-4a15-b599-d7d589267d98",
+      "id": "0d9a314d-4de2-469e-b8a2-889735450074",
       "name": "Health check",
       "request": {
         "name": "Health check",
@@ -30,7 +30,7 @@
       },
       "response": [
         {
-          "id": "ab74d570-efab-44bc-820d-1f7878a1ef85",
+          "id": "6ab13f69-78f9-4ad9-ade5-03bb5084c076",
           "name": "Server and database are healthy",
           "originalRequest": {
             "url": {
@@ -65,7 +65,7 @@
           "_postman_previewlanguage": "json"
         },
         {
-          "id": "39cf8704-abdb-4dad-8b4c-0f9e493ecc85",
+          "id": "890476ce-0ac8-4c85-800d-fc22b6efd303",
           "name": "Database unavailable",
           "originalRequest": {
             "url": {
@@ -106,15 +106,15 @@
       }
     },
     {
-      "id": "afa48dfe-5f7e-42f6-bea2-0159e4d555f4",
+      "id": "afb8f490-7b71-412d-b1ee-5c212c8586f1",
       "name": "api/v1",
       "item": [
         {
-          "id": "41cf70dd-f996-4f85-a0f1-b87c19488bae",
+          "id": "ca68be60-1792-489e-9a30-528682bc19a3",
           "name": "auth",
           "item": [
             {
-              "id": "ae238e4f-b59f-4cf0-a4ca-b36c94fa8f01",
+              "id": "8a1d466a-a1a0-44cd-92c1-8920a36a219a",
               "name": "Register a new user",
               "request": {
                 "name": "Register a new user",
@@ -159,7 +159,7 @@
               },
               "response": [
                 {
-                  "id": "16e297c3-855d-4455-b8dd-9614d8764105",
+                  "id": "7fa1448a-19cb-466a-be07-4e70304435c2",
                   "name": "User created",
                   "originalRequest": {
                     "url": {
@@ -200,12 +200,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"emailVerified\": false,\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"1955-04-28T18:49:46.686Z\",\n    \"updatedAt\": \"2003-04-03T18:50:55.169Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
+                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"emailVerified\": false,\n    \"twoFactorEnabled\": false,\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"2005-05-21T02:23:19.587Z\",\n    \"updatedAt\": \"1970-04-25T13:45:54.724Z\"\n  },\n  \"message\": \"User registered successfully\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "d516aa47-32cc-497d-b78e-fa15f50dc99e",
+                  "id": "7f918e3b-2d9f-4543-9e1b-bfa56c82f570",
                   "name": "Validation failed",
                   "originalRequest": {
                     "url": {
@@ -251,7 +251,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "d3df0f6f-0ca5-4659-8d5e-065a96fe8d67",
+                  "id": "83e85c7a-2abf-4851-b5cd-56f57844284b",
                   "name": "Email or username already in use",
                   "originalRequest": {
                     "url": {
@@ -297,7 +297,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "dbc66387-51db-4f88-bb58-23afad310d75",
+                  "id": "826d1e9e-3c6a-4a56-94cf-3c9408c02fbc",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -343,7 +343,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "ea57b200-9777-43c0-8a80-3f9db1060770",
+                  "id": "63fb0645-edef-4254-b5ab-c83ce65fae16",
                   "name": "Too many registration attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -395,7 +395,7 @@
               }
             },
             {
-              "id": "98dad0df-46b5-441d-8eb7-f68fe55896a3",
+              "id": "5a1749b5-6060-4d42-bd1e-6a977762ffdf",
               "name": "Verify email with OTP",
               "request": {
                 "name": "Verify email with OTP",
@@ -440,7 +440,7 @@
               },
               "response": [
                 {
-                  "id": "aeb55ec3-25ce-45f7-8ad0-e502b84e2302",
+                  "id": "32260c18-8bc9-4e41-8998-662d9b1ff1aa",
                   "name": "Email verified",
                   "originalRequest": {
                     "url": {
@@ -486,7 +486,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "af5d1a97-761c-4684-9f65-924cd9ad9ae0",
+                  "id": "51c5ac96-c9b4-4822-b18b-0399fb840225",
                   "name": "Validation failed or invalid/expired code",
                   "originalRequest": {
                     "url": {
@@ -532,7 +532,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "335dcd4e-d50b-404a-bb92-adc268c22873",
+                  "id": "f3364e94-da7a-420b-affb-b247e2926592",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -578,7 +578,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f3fc8a62-d3f7-40d0-8154-d2e2451f0c51",
+                  "id": "ddd71e67-e7f1-4351-9781-2fdc54d6c8c4",
                   "name": "Too many verify-email attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -630,7 +630,7 @@
               }
             },
             {
-              "id": "efb711f4-e532-485b-bafa-eda0bbad52b1",
+              "id": "0238655d-a12e-4fe5-9352-4e7b9886acbb",
               "name": "Resend email verification OTP",
               "request": {
                 "name": "Resend email verification OTP",
@@ -675,7 +675,7 @@
               },
               "response": [
                 {
-                  "id": "d9dc26ee-92a0-482d-bf89-88c35fb12eac",
+                  "id": "77d207e4-a49b-4ac5-9d44-2722cdf9ebe1",
                   "name": "Generic success (sent if eligible)",
                   "originalRequest": {
                     "url": {
@@ -721,7 +721,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "d234c145-fb4b-4ca7-b16c-cfc241645349",
+                  "id": "fea81fcb-30f5-4363-964a-107cac686000",
                   "name": "Validation failed",
                   "originalRequest": {
                     "url": {
@@ -767,7 +767,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "946c6849-ea85-472d-ab24-497ad0c5c22c",
+                  "id": "79406d8c-0888-4bf3-9e6f-22faa8bce94a",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -813,7 +813,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "1ae465f9-c288-4c6e-a3b2-b60efc9558aa",
+                  "id": "a378b674-f2ad-40f5-9ca7-e91011433eef",
                   "name": "Too many resend attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -865,7 +865,7 @@
               }
             },
             {
-              "id": "4ac2147f-54c1-4da4-962f-b33b7c0ad9e8",
+              "id": "113d98c2-ec35-410d-83b5-11d4ce4f0cf4",
               "name": "Log in with email or username",
               "request": {
                 "name": "Log in with email or username",
@@ -910,7 +910,7 @@
               },
               "response": [
                 {
-                  "id": "c8bb15e3-1498-4dd0-82b7-1dafc2b89c1a",
+                  "id": "6a4696b2-f9d9-4678-a245-a5cc98436435",
                   "name": "Login successful",
                   "originalRequest": {
                     "url": {
@@ -951,12 +951,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"data\": {\n    \"user\": {\n      \"_id\": \"664a1b2c3d4e5f678901234\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"username\": \"jane\",\n      \"email\": \"jane@example.com\",\n      \"emailVerified\": false,\n      \"bio\": \"string\",\n      \"status\": \"active\",\n      \"createdAt\": \"2001-11-01T22:06:36.262Z\",\n      \"updatedAt\": \"1999-12-13T19:24:06.793Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12\"\n  },\n  \"message\": \"Login successful\"\n}",
+                  "body": "{\n  \"data\": {\n    \"requiresTwoFactor\": false,\n    \"twoFactorToken\": \"a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd1234\",\n    \"user\": {\n      \"_id\": \"664a1b2c3d4e5f678901234\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"username\": \"jane\",\n      \"email\": \"jane@example.com\",\n      \"emailVerified\": false,\n      \"twoFactorEnabled\": false,\n      \"bio\": \"string\",\n      \"status\": \"active\",\n      \"createdAt\": \"1975-02-11T01:28:39.100Z\",\n      \"updatedAt\": \"1969-02-10T18:03:00.194Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12\"\n  },\n  \"message\": \"Login successful\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "4093c026-53d9-4ead-8349-999bd9c154d7",
+                  "id": "6be16e73-c8bb-4c72-862f-be7d4458cae1",
                   "name": "Validation failed or invalid credentials",
                   "originalRequest": {
                     "url": {
@@ -1002,7 +1002,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "41836993-9c2a-4bf8-8225-4aa9b6c0fec5",
+                  "id": "bc798979-6de8-4d4a-b51e-7997695d6577",
                   "name": "Account is inactive or email not verified",
                   "originalRequest": {
                     "url": {
@@ -1048,7 +1048,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "5daf41ff-70b5-4f60-b22a-b51d50963e47",
+                  "id": "d29f6896-fc02-4bad-8a73-78ef4e8fae25",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -1094,7 +1094,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "9745fb38-c5ec-4293-b85f-bf91adea5271",
+                  "id": "88ddde3c-249a-475d-86a2-fa92636bdd03",
                   "name": "Too many login attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -1146,7 +1146,7 @@
               }
             },
             {
-              "id": "46bdda21-407f-49ee-83a5-7892d881a6da",
+              "id": "c46e8e76-6041-465f-9e05-ba1fcc4309bd",
               "name": "Log in with Google or Apple",
               "request": {
                 "name": "Log in with Google or Apple",
@@ -1191,7 +1191,7 @@
               },
               "response": [
                 {
-                  "id": "946764b7-fa22-446d-86e0-6212f1369103",
+                  "id": "0f864981-402f-443a-96a0-95a994e60905",
                   "name": "Login successful",
                   "originalRequest": {
                     "url": {
@@ -1232,12 +1232,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"data\": {\n    \"user\": {\n      \"_id\": \"664a1b2c3d4e5f678901234\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"username\": \"jane\",\n      \"email\": \"jane@example.com\",\n      \"emailVerified\": false,\n      \"bio\": \"string\",\n      \"status\": \"active\",\n      \"createdAt\": \"2001-11-01T22:06:36.262Z\",\n      \"updatedAt\": \"1999-12-13T19:24:06.793Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12\"\n  },\n  \"message\": \"Login successful\"\n}",
+                  "body": "{\n  \"data\": {\n    \"requiresTwoFactor\": false,\n    \"twoFactorToken\": \"a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd1234\",\n    \"user\": {\n      \"_id\": \"664a1b2c3d4e5f678901234\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"username\": \"jane\",\n      \"email\": \"jane@example.com\",\n      \"emailVerified\": false,\n      \"twoFactorEnabled\": false,\n      \"bio\": \"string\",\n      \"status\": \"active\",\n      \"createdAt\": \"1975-02-11T01:28:39.100Z\",\n      \"updatedAt\": \"1969-02-10T18:03:00.194Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12\"\n  },\n  \"message\": \"Login successful\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "7a9ea756-338a-410e-b02e-96f89f98cab0",
+                  "id": "63a9f34c-808b-46be-ab51-c44d17b8467d",
                   "name": "Validation failed, unverified provider email, or missing email",
                   "originalRequest": {
                     "url": {
@@ -1283,7 +1283,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f5444e81-b683-401a-a137-4cb2749e8eaa",
+                  "id": "9848450a-0666-46c4-88be-3bea38fe152c",
                   "name": "Invalid or expired social token",
                   "originalRequest": {
                     "url": {
@@ -1329,7 +1329,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "a22231ca-d4f5-4c13-8c48-5533debaaa4b",
+                  "id": "920f736d-5956-4a9e-9805-8caf02d1c5d2",
                   "name": "Account is inactive",
                   "originalRequest": {
                     "url": {
@@ -1375,7 +1375,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "8745722a-cc41-4fad-a71a-b6b945cc47ee",
+                  "id": "0fcaafc0-654c-4723-9acc-46037ee5d9bb",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -1421,7 +1421,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "8a022468-468e-49d4-9ec6-4c17a0881015",
+                  "id": "07b7dd4c-dcbb-42ee-95fd-8527dd50c352",
                   "name": "Too many social login attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -1467,7 +1467,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "504a378c-5d96-4d66-9e85-1f43b3604de9",
+                  "id": "9b6827e6-08b0-4677-85a2-97f4b1e5e484",
                   "name": "Social provider is not configured on the server",
                   "originalRequest": {
                     "url": {
@@ -1519,7 +1519,7 @@
               }
             },
             {
-              "id": "9d8f83c5-b7bb-42f7-879e-c5ef991ec681",
+              "id": "e53f1932-7720-4577-9ffe-f6a24ab98518",
               "name": "Refresh access token",
               "request": {
                 "name": "Refresh access token",
@@ -1564,7 +1564,7 @@
               },
               "response": [
                 {
-                  "id": "7766e08f-043a-4384-951c-4073cfc73883",
+                  "id": "6bf21988-47f7-4728-b2ba-6671b3a2057e",
                   "name": "New tokens issued",
                   "originalRequest": {
                     "url": {
@@ -1610,7 +1610,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "310797a6-450a-45fb-9bed-e126eaf49767",
+                  "id": "e1281900-0b80-42d2-b08d-3cad39ecbbe5",
                   "name": "Validation failed",
                   "originalRequest": {
                     "url": {
@@ -1656,7 +1656,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "5e1df855-9174-45cc-bd7c-a57346119f26",
+                  "id": "87c6a098-37cf-4a10-ad16-51b6ef003210",
                   "name": "Invalid or expired refresh token",
                   "originalRequest": {
                     "url": {
@@ -1702,7 +1702,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "c32193bc-ecaa-494f-b366-bbc00eb701e1",
+                  "id": "72407f51-c0a6-4618-b650-4869f956d471",
                   "name": "Account is inactive",
                   "originalRequest": {
                     "url": {
@@ -1748,7 +1748,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "0b3ed3d8-3ddd-4dcc-a3dd-a71ed2632d77",
+                  "id": "541761ec-3377-490e-b3bc-2f6766cd37f7",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -1794,7 +1794,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "05b23bf4-f896-4c5a-8357-18610908b78a",
+                  "id": "c0fb522f-57f1-4a13-9818-b2fc475e0039",
                   "name": "Too many refresh attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -1846,7 +1846,7 @@
               }
             },
             {
-              "id": "ff603d49-6779-4ffd-9ca1-49cea05e43d6",
+              "id": "e287dbed-2493-44b3-91fd-41ae97b4a4cc",
               "name": "Log out (revoke refresh token)",
               "request": {
                 "name": "Log out (revoke refresh token)",
@@ -1891,7 +1891,7 @@
               },
               "response": [
                 {
-                  "id": "2d54d8d6-9baf-4928-8725-03723bf372f2",
+                  "id": "cdf0edd4-adfd-4f38-8ef0-0864d8fb2b96",
                   "name": "Refresh token revoked",
                   "originalRequest": {
                     "url": {
@@ -1937,7 +1937,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f15cb507-9d40-42e6-b7f1-305ea419a7c2",
+                  "id": "8b37a35c-d199-4c7c-a30d-23ab2cd42825",
                   "name": "Validation failed",
                   "originalRequest": {
                     "url": {
@@ -1983,7 +1983,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "da393450-6de2-4967-b097-b0775bba0c52",
+                  "id": "e8ace9ec-13ad-4245-8710-dfe6add5297a",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -2029,7 +2029,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "d16772bf-9b88-420e-aed2-c550e9f23dbd",
+                  "id": "e1add70c-1ce2-4acc-a324-89a74113e541",
                   "name": "Too many logout attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -2081,7 +2081,7 @@
               }
             },
             {
-              "id": "e6df765c-4c01-4118-b917-370af91ecd25",
+              "id": "23773d5f-e9d9-42b9-89b7-d2b2dcdb8d2c",
               "name": "Request a password reset OTP",
               "request": {
                 "name": "Request a password reset OTP",
@@ -2126,7 +2126,7 @@
               },
               "response": [
                 {
-                  "id": "035fa90f-6ccc-4ca1-8441-562aaa1d1923",
+                  "id": "cd05b7be-b936-444c-a76f-138495d0ef9d",
                   "name": "Generic success (sent if email is registered)",
                   "originalRequest": {
                     "url": {
@@ -2172,7 +2172,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "9aab788a-676d-48df-92c8-f60431c17201",
+                  "id": "18e71538-d92c-4de3-9edd-ed4ca6635edb",
                   "name": "Validation failed",
                   "originalRequest": {
                     "url": {
@@ -2218,7 +2218,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "e566d2ec-4dbf-44ce-acdd-34ed273094c7",
+                  "id": "78180801-71e4-4644-9d7e-09ad2355cc5e",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -2264,7 +2264,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "175e09a4-4153-4757-ad35-d8a3ed8c9d2f",
+                  "id": "bbf94293-e22a-4da8-84b0-04edc4cdc86a",
                   "name": "Too many password reset requests from this IP",
                   "originalRequest": {
                     "url": {
@@ -2316,7 +2316,7 @@
               }
             },
             {
-              "id": "4adf170c-22c2-4086-8c83-2a0e9ad33a60",
+              "id": "4fd0ee56-0b4f-46f0-a3d9-b4ad2d35e716",
               "name": "Set a new password with email and OTP",
               "request": {
                 "name": "Set a new password with email and OTP",
@@ -2361,7 +2361,7 @@
               },
               "response": [
                 {
-                  "id": "db3fda53-e683-418f-88d0-2488842eb4da",
+                  "id": "34b48b0a-909c-46be-9828-60a1fd5c118a",
                   "name": "Password updated",
                   "originalRequest": {
                     "url": {
@@ -2407,7 +2407,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "9b9f8156-48f5-445b-801b-250ab5ad4382",
+                  "id": "7ec2e5eb-4104-4b1b-8bb0-eb15656771b1",
                   "name": "Validation failed or invalid/expired OTP",
                   "originalRequest": {
                     "url": {
@@ -2453,7 +2453,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "76804bf2-c54f-4e04-ba6c-6605bc79ea3f",
+                  "id": "ea9c9efb-b5bf-4086-a035-70266692c818",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -2499,7 +2499,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "9c19165f-ed4b-4996-ad91-a8062237dc56",
+                  "id": "ab41cce7-e5d0-43dc-a113-a887f54a1046",
                   "name": "Too many reset attempts from this IP",
                   "originalRequest": {
                     "url": {
@@ -2549,16 +2549,799 @@
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               }
+            },
+            {
+              "id": "ebec4164-26f1-4245-968c-1223fe0f3f0d",
+              "name": "2fa",
+              "item": [
+                {
+                  "id": "6836db69-8dd6-4fd7-9466-d72f937bcbf2",
+                  "name": "Start TOTP two-factor setup",
+                  "request": {
+                    "name": "Start TOTP two-factor setup",
+                    "description": {
+                      "content": "Returns a TOTP secret and `otpauth://` URL for the authenticator app.\nCall `POST /auth/2fa/confirm` with a valid code to enable 2FA.\n",
+                      "type": "text/plain"
+                    },
+                    "url": {
+                      "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "2fa",
+                        "setup"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "POST",
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{bearerToken}}"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "id": "93f87945-e304-422e-a3d9-77c1d5c3f74e",
+                      "name": "Setup started",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "setup"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          },
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {}
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"data\": {\n    \"secret\": \"string\",\n    \"otpauthUrl\": \"string\"\n  },\n  \"message\": \"string\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "451f2f31-c1e3-449a-beb0-faee09f95a69",
+                      "name": "Two-factor authentication is already enabled",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "setup"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {}
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    },
+                    {
+                      "id": "ccd9456d-f532-40d1-9689-3e23eebdbf1d",
+                      "name": "Authentication required",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "setup"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {}
+                      },
+                      "status": "Unauthorized",
+                      "code": 401,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    }
+                  ],
+                  "event": [],
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  }
+                },
+                {
+                  "id": "c8c7b43e-7c63-4323-839a-2ddca6af0fcf",
+                  "name": "Confirm and enable two-factor authentication",
+                  "request": {
+                    "name": "Confirm and enable two-factor authentication",
+                    "description": {},
+                    "url": {
+                      "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "2fa",
+                        "confirm"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "POST",
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{bearerToken}}"
+                        }
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"code\": \"<string>\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "response": [
+                    {
+                      "id": "cc062f40-b9db-40f8-b857-30305dc5aabf",
+                      "name": "Two-factor authentication enabled",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "confirm"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"code\": \"123456\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    },
+                    {
+                      "id": "6b70c2ef-5593-4de9-8250-409d8ea814da",
+                      "name": "Invalid or expired setup, or invalid authenticator code",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "confirm"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"code\": \"123456\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        }
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    },
+                    {
+                      "id": "d36ff37e-cd1a-49fc-a06b-af75c3f667a6",
+                      "name": "Authentication required",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "confirm"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"code\": \"123456\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        }
+                      },
+                      "status": "Unauthorized",
+                      "code": 401,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    }
+                  ],
+                  "event": [],
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  }
+                },
+                {
+                  "id": "e12bf637-4455-4140-826d-6486459b7b15",
+                  "name": "Complete login with a TOTP code",
+                  "request": {
+                    "name": "Complete login with a TOTP code",
+                    "description": {
+                      "content": "Used after `POST /auth/login` or `POST /auth/social` when the response\nhas `requiresTwoFactor: true`. Returns the same token pair as a normal login.\n",
+                      "type": "text/plain"
+                    },
+                    "url": {
+                      "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "2fa",
+                        "verify"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "POST",
+                    "auth": null,
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"twoFactorToken\": \"<string>\",\n  \"code\": \"<string>\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "response": [
+                    {
+                      "id": "ae9b95f5-c60b-40e2-9f64-017a0ac7ce5d",
+                      "name": "Login successful",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "verify"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"twoFactorToken\": \"<string>\",\n  \"code\": \"123456\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"data\": {\n    \"requiresTwoFactor\": false,\n    \"twoFactorToken\": \"a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd1234\",\n    \"user\": {\n      \"_id\": \"664a1b2c3d4e5f678901234\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"username\": \"jane\",\n      \"email\": \"jane@example.com\",\n      \"emailVerified\": false,\n      \"twoFactorEnabled\": false,\n      \"bio\": \"string\",\n      \"status\": \"active\",\n      \"createdAt\": \"1975-02-11T01:28:39.100Z\",\n      \"updatedAt\": \"1969-02-10T18:03:00.194Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12\"\n  },\n  \"message\": \"Login successful\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "e31bdc64-f844-4526-a970-da92649d274f",
+                      "name": "Invalid authenticator code",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "verify"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "method": "POST",
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"twoFactorToken\": \"<string>\",\n  \"code\": \"123456\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        }
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    },
+                    {
+                      "id": "4283ac1a-1e42-458e-94c9-592a0deeb17a",
+                      "name": "Invalid or expired two-factor token",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "verify"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "method": "POST",
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"twoFactorToken\": \"<string>\",\n  \"code\": \"123456\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        }
+                      },
+                      "status": "Unauthorized",
+                      "code": 401,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    }
+                  ],
+                  "event": [],
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  }
+                },
+                {
+                  "id": "369818d7-16a4-4866-8c1d-d563ec035d05",
+                  "name": "Disable two-factor authentication",
+                  "request": {
+                    "name": "Disable two-factor authentication",
+                    "description": {
+                      "content": "Requires a valid TOTP code. Password is required when the account has a password.\nRevokes all refresh tokens for the user.\n",
+                      "type": "text/plain"
+                    },
+                    "url": {
+                      "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "2fa",
+                        "disable"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "POST",
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{bearerToken}}"
+                        }
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"code\": \"<string>\",\n  \"password\": \"<string>\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "response": [
+                    {
+                      "id": "5d1a079b-f4a5-4c23-b3a0-f3a94517d4fd",
+                      "name": "Two-factor authentication disabled",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "disable"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"code\": \"123456\",\n  \"password\": \"<string>\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    },
+                    {
+                      "id": "2d1e0b86-817e-4520-aad8-1e7b93bb6bac",
+                      "name": "Not enabled, invalid code, or missing password",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "disable"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"code\": \"123456\",\n  \"password\": \"<string>\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        }
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    },
+                    {
+                      "id": "df38d196-9f79-45a6-9960-84ab059e2afc",
+                      "name": "Authentication required",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "v1",
+                            "auth",
+                            "2fa",
+                            "disable"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "POST",
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"code\": \"123456\",\n  \"password\": \"<string>\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        }
+                      },
+                      "status": "Unauthorized",
+                      "code": 401,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "text/plain"
+                        }
+                      ],
+                      "body": "",
+                      "cookie": [],
+                      "_postman_previewlanguage": "text"
+                    }
+                  ],
+                  "event": [],
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  }
+                }
+              ],
+              "event": []
             }
           ],
           "event": []
         },
         {
-          "id": "ae2f812b-74be-407e-86d8-047b54582b44",
+          "id": "88b4304a-b280-4a40-bb84-9b9add57e416",
           "name": "uploads",
           "item": [
             {
-              "id": "16d70284-c9cc-45dd-8f29-8926946f2ace",
+              "id": "cdd6af1a-0498-4712-80f2-f0fc994f10a0",
               "name": "Upload one or more files",
               "request": {
                 "name": "Upload one or more files",
@@ -2612,7 +3395,7 @@
               },
               "response": [
                 {
-                  "id": "f0517dfc-165b-44df-a866-2d16294dc53a",
+                  "id": "41f5c586-b9e9-441e-8ba8-c578f0ae3844",
                   "name": "Files uploaded",
                   "originalRequest": {
                     "url": {
@@ -2670,7 +3453,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "3a7ebc0b-7a29-42c0-94fa-9489cad70baf",
+                  "id": "00d5c2cc-4b42-4194-a526-6972eee8a439",
                   "name": "No files, invalid type, or too many files",
                   "originalRequest": {
                     "url": {
@@ -2728,7 +3511,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "ef2e325f-4007-47d9-bf6e-c2410db50789",
+                  "id": "1cd17a84-a426-46b6-bd30-ee8a3eb1eef2",
                   "name": "Missing, invalid, or expired token",
                   "originalRequest": {
                     "url": {
@@ -2786,7 +3569,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "14df11f1-7c9b-4c02-86b1-b13ae6f7cff2",
+                  "id": "1d0d62e5-f166-4347-9211-f81c4959c08d",
                   "name": "File exceeds UPLOAD_MAX_FILE_SIZE",
                   "originalRequest": {
                     "url": {
@@ -2844,7 +3627,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "ddef9b75-0f21-4611-948b-c097308f12c1",
+                  "id": "6be06482-ad6f-4981-ba8e-2a0a0e815858",
                   "name": "Upload rate limit exceeded",
                   "originalRequest": {
                     "url": {
@@ -2908,11 +3691,11 @@
               }
             },
             {
-              "id": "bb9c25cf-41f8-4d88-9d6b-fff162f92009",
+              "id": "c1324257-d88c-4487-b2f5-380e0b6226c0",
               "name": "{fileId}",
               "item": [
                 {
-                  "id": "5b3df3ac-872b-46e5-8a02-638cb37edc89",
+                  "id": "dca1d5e4-46ee-4c41-8f6b-8a221d079115",
                   "name": "Archive an uploaded file (soft delete)",
                   "request": {
                     "name": "Archive an uploaded file (soft delete)",
@@ -2960,7 +3743,7 @@
                   },
                   "response": [
                     {
-                      "id": "a0533b6a-86d6-4281-83bb-0a16962763ab",
+                      "id": "2348a1a2-fdc8-40d1-b3a3-45a4273285c6",
                       "name": "File archived",
                       "originalRequest": {
                         "url": {
@@ -3014,7 +3797,7 @@
                       "_postman_previewlanguage": "json"
                     },
                     {
-                      "id": "8ddc82a0-455e-4d6e-aefa-aaf9a19ce1f4",
+                      "id": "aa632cf5-0b64-445f-9e96-3a3166020725",
                       "name": "Invalid file name or file already archived in storage",
                       "originalRequest": {
                         "url": {
@@ -3068,7 +3851,7 @@
                       "_postman_previewlanguage": "json"
                     },
                     {
-                      "id": "3f23c540-32b2-412b-8643-3cf0050e8352",
+                      "id": "11f5804b-dbe0-40a3-8552-0f5775f9d836",
                       "name": "Missing, invalid, or expired token",
                       "originalRequest": {
                         "url": {
@@ -3122,7 +3905,7 @@
                       "_postman_previewlanguage": "json"
                     },
                     {
-                      "id": "6723f17c-b8e2-4fe7-9b35-96b2489269c7",
+                      "id": "f9ff6f63-0e70-49b6-8bd3-116dd667477b",
                       "name": "File not found or not owned by the current user",
                       "originalRequest": {
                         "url": {
@@ -3176,7 +3959,7 @@
                       "_postman_previewlanguage": "json"
                     },
                     {
-                      "id": "ebdba9be-bee5-4609-82bf-b46f8ca8716a",
+                      "id": "c8b1b182-5075-415f-8f8d-746343d55fc4",
                       "name": "Upload rate limit exceeded",
                       "originalRequest": {
                         "url": {
@@ -3236,7 +4019,7 @@
                   }
                 },
                 {
-                  "id": "5650534a-228e-47b4-aed9-c1ea3413dc76",
+                  "id": "5e722081-d05f-4303-b8a6-02a6e0186d36",
                   "name": "Download an active uploaded file",
                   "request": {
                     "name": "Download an active uploaded file",
@@ -3285,7 +4068,7 @@
                   },
                   "response": [
                     {
-                      "id": "bb98cb34-b724-4611-a642-54a055f3030f",
+                      "id": "98467c95-c4b9-409e-ad71-1a15373becdc",
                       "name": "File stream",
                       "originalRequest": {
                         "url": {
@@ -3340,7 +4123,7 @@
                       "_postman_previewlanguage": "text"
                     },
                     {
-                      "id": "afd89ade-e735-4366-9d1c-86f2deb04f31",
+                      "id": "752db4ec-f092-46b9-a972-d869f7dc0b91",
                       "name": "Missing, invalid, or expired token",
                       "originalRequest": {
                         "url": {
@@ -3395,7 +4178,7 @@
                       "_postman_previewlanguage": "json"
                     },
                     {
-                      "id": "4d5faf91-4011-4a12-8091-5ea1b57307a9",
+                      "id": "2f3a69cc-4b5b-47b2-88a6-12ed42755cc1",
                       "name": "File not found or archived",
                       "originalRequest": {
                         "url": {
@@ -3450,7 +4233,7 @@
                       "_postman_previewlanguage": "json"
                     },
                     {
-                      "id": "a4309cd9-b58c-4e3f-87ba-b9f5e1372cec",
+                      "id": "0f1f8cd5-3834-44cc-b635-00aeef2ee5fe",
                       "name": "Upload rate limit exceeded",
                       "originalRequest": {
                         "url": {
@@ -3517,11 +4300,11 @@
           "event": []
         },
         {
-          "id": "c0b780cb-d226-4449-8223-5c516f748f05",
+          "id": "f6792744-708e-40e6-9ce8-210944253124",
           "name": "users/me",
           "item": [
             {
-              "id": "d4258bb1-4700-4484-a1b3-a793ae105ea4",
+              "id": "e2049f79-533c-405d-9866-20b41cd817d6",
               "name": "Get logged-in user profile",
               "request": {
                 "name": "Get logged-in user profile",
@@ -3561,7 +4344,7 @@
               },
               "response": [
                 {
-                  "id": "74fd61ee-2bae-4dc1-a788-8778eaebc4ed",
+                  "id": "64466e8f-11f9-4aec-a43c-5004bec13647",
                   "name": "Current user profile",
                   "originalRequest": {
                     "url": {
@@ -3602,12 +4385,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"emailVerified\": false,\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"1996-03-24T02:36:53.459Z\",\n    \"updatedAt\": \"1988-12-26T03:01:03.918Z\",\n    \"profilePicture\": {\n      \"id\": \"664a1b2c3d4e5f678901234567\",\n      \"url\": \"http://localhost:3003/uploads/a1b2c3d4e5f6.jpg\",\n      \"name\": \"a1b2c3d4e5f678901234567890abcd12.jpg\",\n      \"originalName\": \"photo.jpg\",\n      \"mimeType\": \"image/jpeg\",\n      \"size\": 20480,\n      \"encoding\": \"7bit\",\n      \"provider\": \"local\"\n    }\n  },\n  \"message\": \"Profile fetched successfully\"\n}",
+                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"emailVerified\": false,\n    \"twoFactorEnabled\": false,\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"2009-11-30T11:53:10.822Z\",\n    \"updatedAt\": \"1949-11-09T23:08:02.439Z\",\n    \"profilePicture\": {\n      \"id\": \"664a1b2c3d4e5f678901234567\",\n      \"url\": \"http://localhost:3003/uploads/a1b2c3d4e5f6.jpg\",\n      \"name\": \"a1b2c3d4e5f678901234567890abcd12.jpg\",\n      \"originalName\": \"photo.jpg\",\n      \"mimeType\": \"image/jpeg\",\n      \"size\": 20480,\n      \"encoding\": \"7bit\",\n      \"provider\": \"local\"\n    }\n  },\n  \"message\": \"Profile fetched successfully\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "5da4c07c-df38-45a3-b9e5-d7881ef6a962",
+                  "id": "f41cef2d-73a1-4523-a9ec-198d41225b02",
                   "name": "Missing, invalid, or expired token",
                   "originalRequest": {
                     "url": {
@@ -3653,7 +4436,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f588eb01-c19f-4dc2-a118-e7c751de77da",
+                  "id": "9b728ab5-8247-43e1-b447-a060678e147e",
                   "name": "User not found",
                   "originalRequest": {
                     "url": {
@@ -3705,7 +4488,7 @@
               }
             },
             {
-              "id": "5b26ca08-d15d-4d75-9cba-71271251593a",
+              "id": "fb431ed2-cd2e-49fd-a95c-edf00d326f2c",
               "name": "Update logged-in user profile",
               "request": {
                 "name": "Update logged-in user profile",
@@ -3758,7 +4541,7 @@
               },
               "response": [
                 {
-                  "id": "4c322fa3-824e-456d-952e-fd2da3a50daf",
+                  "id": "4940e2d0-ed36-4129-86c3-ac45720086ee",
                   "name": "Profile updated",
                   "originalRequest": {
                     "url": {
@@ -3807,12 +4590,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"emailVerified\": false,\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"2024-03-25T02:28:59.748Z\",\n    \"updatedAt\": \"1967-10-22T01:04:19.134Z\",\n    \"profilePicture\": {\n      \"id\": \"664a1b2c3d4e5f678901234567\",\n      \"url\": \"http://localhost:3003/uploads/a1b2c3d4e5f6.jpg\",\n      \"name\": \"a1b2c3d4e5f678901234567890abcd12.jpg\",\n      \"originalName\": \"photo.jpg\",\n      \"mimeType\": \"image/jpeg\",\n      \"size\": 20480,\n      \"encoding\": \"7bit\",\n      \"provider\": \"local\"\n    }\n  },\n  \"message\": \"Profile updated successfully\"\n}",
+                  "body": "{\n  \"data\": {\n    \"_id\": \"664a1b2c3d4e5f678901234\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"username\": \"jane\",\n    \"email\": \"jane@example.com\",\n    \"emailVerified\": false,\n    \"twoFactorEnabled\": false,\n    \"bio\": \"string\",\n    \"status\": \"active\",\n    \"createdAt\": \"1976-04-02T23:32:39.140Z\",\n    \"updatedAt\": \"2007-01-26T18:21:59.805Z\",\n    \"profilePicture\": {\n      \"id\": \"664a1b2c3d4e5f678901234567\",\n      \"url\": \"http://localhost:3003/uploads/a1b2c3d4e5f6.jpg\",\n      \"name\": \"a1b2c3d4e5f678901234567890abcd12.jpg\",\n      \"originalName\": \"photo.jpg\",\n      \"mimeType\": \"image/jpeg\",\n      \"size\": 20480,\n      \"encoding\": \"7bit\",\n      \"provider\": \"local\"\n    }\n  },\n  \"message\": \"Profile updated successfully\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "732197c1-f1ea-4930-8a03-4a33e8b0edb8",
+                  "id": "74caf969-bda5-4fab-a478-3f96b3acaac4",
                   "name": "Validation failed",
                   "originalRequest": {
                     "url": {
@@ -3866,7 +4649,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "4c3a684d-3a9d-4a6c-bf81-64022b64f7a8",
+                  "id": "adc5d141-b3bb-49de-8295-99bba0b6f659",
                   "name": "Missing, invalid, or expired token",
                   "originalRequest": {
                     "url": {
@@ -3920,7 +4703,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "e3841ba9-5656-4d26-b888-81332fdf7050",
+                  "id": "16c0874e-3c00-4a68-861c-7a495949ed5e",
                   "name": "Email not verified or account inactive",
                   "originalRequest": {
                     "url": {
@@ -3974,7 +4757,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "c274e07c-a323-4c43-b91d-95934ee36cf4",
+                  "id": "0be7e7fb-6422-42db-9c0b-93d984a607fb",
                   "name": "User not found",
                   "originalRequest": {
                     "url": {
@@ -4028,7 +4811,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "76cf44da-7dbd-4c09-97be-2429cad59eab",
+                  "id": "2fa91241-47bc-4a5c-bfe1-63b938a15d55",
                   "name": "Username already in use",
                   "originalRequest": {
                     "url": {
@@ -4082,7 +4865,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "71b1b1a3-c975-4502-8da3-90ad010ed85b",
+                  "id": "dece7e99-b9eb-49f9-8726-0b7046acde92",
                   "name": "JSON body exceeds JSON_BODY_LIMIT",
                   "originalRequest": {
                     "url": {
@@ -4157,7 +4940,7 @@
     }
   ],
   "info": {
-    "_postman_id": "6c0a4728-d5c3-43ef-9bf5-190b53b8ee2e",
+    "_postman_id": "fe34c761-8eef-453e-a069-2c350ebd350c",
     "name": "Feed App API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": {

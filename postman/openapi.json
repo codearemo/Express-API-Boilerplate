@@ -81,6 +81,10 @@
             "type": "boolean",
             "example": false
           },
+          "twoFactorEnabled": {
+            "type": "boolean",
+            "example": false
+          },
           "bio": {
             "type": "string",
             "nullable": true
@@ -308,6 +312,16 @@
       "LoginResponse": {
         "type": "object",
         "properties": {
+          "requiresTwoFactor": {
+            "type": "boolean",
+            "description": "When true, complete sign-in with POST /auth/2fa/verify using twoFactorToken and a TOTP code",
+            "example": false
+          },
+          "twoFactorToken": {
+            "type": "string",
+            "description": "Present when requiresTwoFactor is true — single-use challenge token (64-char hex)",
+            "example": "a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd1234"
+          },
           "user": {
             "$ref": "#/components/schemas/User"
           },
@@ -320,6 +334,67 @@
             "type": "string",
             "description": "Long-lived refresh token for POST /auth/refresh",
             "example": "a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12"
+          }
+        }
+      },
+      "TwoFactorSetupResponse": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "Base32 TOTP secret for manual entry"
+          },
+          "otpauthUrl": {
+            "type": "string",
+            "description": "otpauth:// URI for QR scanning"
+          }
+        }
+      },
+      "ConfirmTwoFactorRequest": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "example": "123456"
+          }
+        }
+      },
+      "VerifyTwoFactorLoginRequest": {
+        "type": "object",
+        "required": [
+          "twoFactorToken",
+          "code"
+        ],
+        "properties": {
+          "twoFactorToken": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "example": "123456"
+          }
+        }
+      },
+      "DisableTwoFactorRequest": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "example": "123456"
+          },
+          "password": {
+            "type": "string",
+            "description": "Required when the account has a password"
           }
         }
       },
@@ -1636,6 +1711,152 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/2fa/setup": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Start TOTP two-factor setup",
+        "description": "Returns a TOTP secret and `otpauth://` URL for the authenticator app.\nCall `POST /auth/2fa/confirm` with a valid code to enable 2FA.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Setup started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TwoFactorSetupResponse"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Two-factor authentication is already enabled"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/2fa/confirm": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Confirm and enable two-factor authentication",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmTwoFactorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Two-factor authentication enabled"
+          },
+          "400": {
+            "description": "Invalid or expired setup, or invalid authenticator code"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/2fa/verify": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Complete login with a TOTP code",
+        "description": "Used after `POST /auth/login` or `POST /auth/social` when the response\nhas `requiresTwoFactor: true`. Returns the same token pair as a normal login.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyTwoFactorLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponseLogin"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid authenticator code"
+          },
+          "401": {
+            "description": "Invalid or expired two-factor token"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/2fa/disable": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Disable two-factor authentication",
+        "description": "Requires a valid TOTP code. Password is required when the account has a password.\nRevokes all refresh tokens for the user.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DisableTwoFactorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Two-factor authentication disabled"
+          },
+          "400": {
+            "description": "Not enabled, invalid code, or missing password"
+          },
+          "401": {
+            "description": "Authentication required"
           }
         }
       }

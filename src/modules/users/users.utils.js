@@ -23,6 +23,7 @@ function toPublicUser(user) {
     password: _password,
     authProviders: _authProviders,
     profilePicture: _profilePicture,
+    twoFactorSecret: _twoFactorSecret,
     ...publicUser
   } = user;
   return publicUser;

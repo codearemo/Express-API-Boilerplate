@@ -22,7 +22,7 @@ module.exports = [
     },
   },
   {
-    files: ['src/server.js', 'src/database/**/*.js', 'src/utils/mail.js', 'src/modules/auth/auth.service.js'],
+    files: ['src/server.js', 'src/database/**/*.js', 'src/utils/mail.js', 'src/modules/auth/services/auth.service.js'],
     rules: {
       'no-console': 'off',
       'n/no-process-exit': 'off',

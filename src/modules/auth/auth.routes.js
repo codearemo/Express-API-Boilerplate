@@ -1,5 +1,6 @@
 const express = require('express');
 const authController = require('./auth.controller');
+const authenticate = require('../../middleware/authenticate.middleware');
 const {
   registerLimiter,
   loginLimiter,
@@ -10,6 +11,10 @@ const {
   resendVerificationLimiter,
   refreshLimiter,
   logoutLimiter,
+  twoFactorSetupLimiter,
+  twoFactorConfirmLimiter,
+  twoFactorVerifyLimiter,
+  twoFactorDisableLimiter,
 } = require('../../middleware/rate-limit.middleware');
 
 const router = express.Router();
@@ -42,6 +47,33 @@ router.post(
   '/reset-password',
   resetPasswordLimiter,
   authController.resetPassword,
+);
+
+router.post(
+  '/2fa/setup',
+  twoFactorSetupLimiter,
+  authenticate,
+  authController.setupTwoFactor,
+);
+
+router.post(
+  '/2fa/confirm',
+  twoFactorConfirmLimiter,
+  authenticate,
+  authController.confirmTwoFactor,
+);
+
+router.post(
+  '/2fa/verify',
+  twoFactorVerifyLimiter,
+  authController.verifyTwoFactorLogin,
+);
+
+router.post(
+  '/2fa/disable',
+  twoFactorDisableLimiter,
+  authenticate,
+  authController.disableTwoFactor,
 );
 
 module.exports = router;

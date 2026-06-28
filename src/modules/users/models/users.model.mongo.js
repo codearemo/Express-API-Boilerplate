@@ -31,6 +31,8 @@ const usersSchema = new mongoose.Schema({
     required: false,
     default: null,
   },
+  twoFactorEnabled: { type: Boolean, default: false },
+  twoFactorSecret: { type: String, required: false, select: false },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
@@ -56,6 +58,7 @@ usersSchema.index(
 function stripSensitiveFields(_doc, ret) {
   delete ret.password;
   delete ret.authProviders;
+  delete ret.twoFactorSecret;
   return ret;
 }
 

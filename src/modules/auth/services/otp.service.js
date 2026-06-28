@@ -1,11 +1,14 @@
 // ******************************************************
 // OTP SERVICE — issue and verify email OTP codes
 // ******************************************************
+//
+// Shared by auth.service for email verification and password reset.
+// Persists hashed codes via email-otps repository; sends via mail util.
 
-const config = require('../../config');
-const { generateOtp, hashOtp } = require('../../utils/otp');
-const { sendOtpEmail } = require('../../utils/mail');
-const { emailOtps: emailOtpsRepository } = require('../auth/repositories');
+const config = require('../../../config');
+const { generateOtp, hashOtp } = require('../../../utils/otp');
+const { sendOtpEmail } = require('../../../utils/mail');
+const { emailOtps: emailOtpsRepository } = require('../repositories');
 
 async function issueOtp(email, purpose) {
   const rawOtp = generateOtp();

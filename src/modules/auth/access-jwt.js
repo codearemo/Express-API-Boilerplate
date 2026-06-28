@@ -1,6 +1,17 @@
 // ******************************************************
-// AUTH TOKEN — sign and verify JWTs (no HTTP)
+// ACCESS JWT — sign and verify short-lived access tokens
 // ******************************************************
+//
+// Low-level JWT helpers only. No database, no refresh tokens, no HTTP.
+//
+// Use this file when you need to:
+//   - mint a single access JWT (signAccessToken)
+//   - validate a Bearer token from a request (verifyToken)
+//
+// For a full login response ({ token, refreshToken }), use issue-token-pair.js
+// instead — it calls signAccessToken here and also persists a refresh token.
+//
+// Used by: authenticate.middleware, issue-token-pair.js, tests
 
 const jwt = require('jsonwebtoken');
 const config = require('../../config');

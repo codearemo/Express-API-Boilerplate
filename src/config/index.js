@@ -37,6 +37,16 @@ const config = {
       maxAttempts: Number(process.env.OTP_MAX_ATTEMPTS) || 5,
     };
   },
+  get twoFactor() {
+    return {
+      issuer: process.env.TWO_FACTOR_ISSUER || 'My App',
+      challengeExpiresMinutes:
+        Number(process.env.TWO_FACTOR_CHALLENGE_EXPIRES_MINUTES) || 5,
+      setupExpiresMinutes:
+        Number(process.env.TWO_FACTOR_SETUP_EXPIRES_MINUTES) || 10,
+      encryptionKey: process.env.TWO_FACTOR_ENCRYPTION_KEY,
+    };
+  },
   get cors() {
     return {
       origins: parseCommaSeparatedList(process.env.ALLOWED_ORIGINS),
@@ -163,6 +173,30 @@ const config = {
         windowMs:
           Number(process.env.RATE_LIMIT_SOCIAL_LOGIN_WINDOW_MS) || authWindowMs,
         max: Number(process.env.RATE_LIMIT_SOCIAL_LOGIN_MAX) || 10,
+      },
+      twoFactorSetup: {
+        windowMs:
+          Number(process.env.RATE_LIMIT_TWO_FACTOR_SETUP_WINDOW_MS) ||
+          authWindowMs,
+        max: Number(process.env.RATE_LIMIT_TWO_FACTOR_SETUP_MAX) || 10,
+      },
+      twoFactorConfirm: {
+        windowMs:
+          Number(process.env.RATE_LIMIT_TWO_FACTOR_CONFIRM_WINDOW_MS) ||
+          authWindowMs,
+        max: Number(process.env.RATE_LIMIT_TWO_FACTOR_CONFIRM_MAX) || 10,
+      },
+      twoFactorVerify: {
+        windowMs:
+          Number(process.env.RATE_LIMIT_TWO_FACTOR_VERIFY_WINDOW_MS) ||
+          authWindowMs,
+        max: Number(process.env.RATE_LIMIT_TWO_FACTOR_VERIFY_MAX) || 10,
+      },
+      twoFactorDisable: {
+        windowMs:
+          Number(process.env.RATE_LIMIT_TWO_FACTOR_DISABLE_WINDOW_MS) ||
+          authWindowMs,
+        max: Number(process.env.RATE_LIMIT_TWO_FACTOR_DISABLE_MAX) || 10,
       },
       upload: {
         windowMs:

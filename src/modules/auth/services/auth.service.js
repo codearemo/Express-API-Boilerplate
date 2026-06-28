@@ -1,10 +1,14 @@
 // ******************************************************
 // AUTH SERVICE — sign-up, sign-in, tokens (no HTTP, no Mongoose)
 // ******************************************************
+//
+// Business logic for registration, login, social auth, password reset,
+// and token refresh. Lives under services/ alongside otp.service and
+// two-factor.service — controller and routes stay one level up.
 
-const usersRepository = require('../users/repositories');
-const { refreshTokens: refreshTokensRepository } = require('./repositories');
-const { toPublicUser } = require('../users/users.utils');
+const usersRepository = require('../../users/repositories');
+const { refreshTokens: refreshTokensRepository } = require('../repositories');
+const { toPublicUser } = require('../../users/users.utils');
 const {
   validateRegister,
   validateLogin,
@@ -15,35 +19,22 @@ const {
   validateRefreshToken,
   validateSocialLogin,
   isEmail,
-} = require('./auth.validation');
-const { signAccessToken } = require('./auth.token');
-const { assertUserIsActive, assertEmailVerified } = require('./auth.utils');
+} = require('../auth.validation');
+const { issueAuthTokens } = require('../issue-token-pair');
+const { completeAuthentication } = require('./two-factor.service');
+const { assertUserIsActive, assertEmailVerified } = require('../auth.utils');
 const { issueOtp, verifyOtp } = require('./otp.service');
-const { OTP_PURPOSES } = require('../../constants/otp');
-const { mapMongoDuplicateKeyError } = require('../../utils/mongo-errors');
-const { verifySocialToken } = require('../../utils/social-auth');
-const { generateSocialUsername } = require('../../utils/social-username');
-const { normalizeEmail } = require('../../utils/normalize-email');
+const { OTP_PURPOSES } = require('../../../constants/otp');
+const { mapMongoDuplicateKeyError } = require('../../../utils/mongo-errors');
+const { verifySocialToken } = require('../../../utils/social-auth');
+const { generateSocialUsername } = require('../../../utils/social-username');
+const { normalizeEmail } = require('../../../utils/normalize-email');
 const bcrypt = require('bcrypt');
 
 const FORGOT_PASSWORD_MESSAGE =
   'If that email is registered, a verification code has been sent.';
 const RESEND_VERIFICATION_MESSAGE =
   'If that email is registered and not yet verified, a verification code has been sent.';
-
-async function issueAuthTokens(user) {
-  const refreshToken = await refreshTokensRepository.createForUser(user._id);
-
-  try {
-    return {
-      token: signAccessToken(user),
-      refreshToken,
-    };
-  } catch (error) {
-    await refreshTokensRepository.revokeByRawToken(refreshToken);
-    throw error;
-  }
-}
 
 async function register(body) {
   const payload = validateRegister(body);
@@ -158,12 +149,7 @@ async function login(body) {
   assertUserIsActive(user);
   assertEmailVerified(user);
 
-  const tokens = await issueAuthTokens(user);
-
-  return {
-    user: toPublicUser(user),
-    ...tokens,
-  };
+  return completeAuthentication(user);
 }
 
 async function refresh(body) {
@@ -271,12 +257,7 @@ async function socialLogin(body) {
 
   assertUserIsActive(user);
 
-  const tokens = await issueAuthTokens(user);
-
-  return {
-    user: toPublicUser(user),
-    ...tokens,
-  };
+  return completeAuthentication(user);
 }
 
 async function forgotPassword(body) {

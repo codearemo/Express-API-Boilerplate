@@ -1,4 +1,5 @@
-const authService = require('./auth.service');
+const authService = require('./services/auth.service');
+const twoFactorService = require('./services/two-factor.service');
 const { sendSuccess } = require('../../utils/api-response');
 
 async function register(req, res, next) {
@@ -42,7 +43,9 @@ async function login(req, res, next) {
   try {
     const result = await authService.login(req.body);
     sendSuccess(res, {
-      message: 'Login successful',
+      message: result.requiresTwoFactor
+        ? 'Two-factor authentication required'
+        : 'Login successful',
       data: result,
     });
   } catch (error) {
@@ -54,7 +57,9 @@ async function socialLogin(req, res, next) {
   try {
     const result = await authService.socialLogin(req.body);
     sendSuccess(res, {
-      message: 'Login successful',
+      message: result.requiresTwoFactor
+        ? 'Two-factor authentication required'
+        : 'Login successful',
       data: result,
     });
   } catch (error) {
@@ -107,6 +112,60 @@ async function resetPassword(req, res, next) {
   }
 }
 
+async function setupTwoFactor(req, res, next) {
+  try {
+    const result = await twoFactorService.setupTwoFactor(req.user.id);
+    sendSuccess(res, {
+      message: 'Scan the secret or otpauth URL with your authenticator app',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function confirmTwoFactor(req, res, next) {
+  try {
+    const result = await twoFactorService.confirmTwoFactor(
+      req.user.id,
+      req.body,
+    );
+    sendSuccess(res, {
+      message: 'Two-factor authentication enabled',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function verifyTwoFactorLogin(req, res, next) {
+  try {
+    const result = await twoFactorService.verifyTwoFactorLogin(req.body);
+    sendSuccess(res, {
+      message: 'Login successful',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function disableTwoFactor(req, res, next) {
+  try {
+    const result = await twoFactorService.disableTwoFactor(
+      req.user.id,
+      req.body,
+    );
+    sendSuccess(res, {
+      message: 'Two-factor authentication disabled',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   register,
   verifyEmail,
@@ -117,4 +176,8 @@ module.exports = {
   logout,
   forgotPassword,
   resetPassword,
+  setupTwoFactor,
+  confirmTwoFactor,
+  verifyTwoFactorLogin,
+  disableTwoFactor,
 };

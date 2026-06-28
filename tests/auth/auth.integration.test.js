@@ -1,7 +1,7 @@
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const app = require('../../src/app');
-const { signAccessToken } = require('../../src/modules/auth/auth.token');
+const { signAccessToken } = require('../../src/modules/auth/access-jwt');
 const { validRegisterPayload, VALID_PASSWORD, verifyRegisteredUser } = require('../helpers');
 
 // Supertest hits the Express app directly — no real HTTP server needed

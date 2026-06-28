@@ -46,6 +46,10 @@ const {
   refresh,
   logout,
   socialLogin,
+  twoFactorSetup,
+  twoFactorConfirm,
+  twoFactorVerify,
+  twoFactorDisable,
   upload,
 } = config.rateLimit;
 
@@ -109,6 +113,30 @@ const socialLoginLimiter = createRateLimiter({
   message: 'Too many social login attempts, please try again later',
 });
 
+const twoFactorSetupLimiter = createRateLimiter({
+  limit: twoFactorSetup.max,
+  windowMs: twoFactorSetup.windowMs,
+  message: 'Too many two-factor setup attempts, please try again later',
+});
+
+const twoFactorConfirmLimiter = createRateLimiter({
+  limit: twoFactorConfirm.max,
+  windowMs: twoFactorConfirm.windowMs,
+  message: 'Too many two-factor confirmation attempts, please try again later',
+});
+
+const twoFactorVerifyLimiter = createRateLimiter({
+  limit: twoFactorVerify.max,
+  windowMs: twoFactorVerify.windowMs,
+  message: 'Too many two-factor verification attempts, please try again later',
+});
+
+const twoFactorDisableLimiter = createRateLimiter({
+  limit: twoFactorDisable.max,
+  windowMs: twoFactorDisable.windowMs,
+  message: 'Too many two-factor disable attempts, please try again later',
+});
+
 const uploadLimiter = createRateLimiter({
   limit: upload.max,
   windowMs: upload.windowMs,
@@ -128,5 +156,9 @@ module.exports = {
   refreshLimiter,
   logoutLimiter,
   socialLoginLimiter,
+  twoFactorSetupLimiter,
+  twoFactorConfirmLimiter,
+  twoFactorVerifyLimiter,
+  twoFactorDisableLimiter,
   uploadLimiter,
 };

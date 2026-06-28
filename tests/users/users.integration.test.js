@@ -35,7 +35,7 @@ describe('Users profile API', () => {
     });
 
     it('returns 403 when email is not verified', async () => {
-      const { signAccessToken } = require('../../src/modules/auth/auth.token');
+      const { signAccessToken } = require('../../src/modules/auth/access-jwt');
 
       const registerResponse = await request(app)
         .post(`${API}/auth/register`)

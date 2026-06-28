@@ -2,7 +2,7 @@
 // AUTHENTICATE MIDDLEWARE — protect routes with JWT
 // ******************************************************
 
-const { verifyToken } = require('../modules/auth/auth.token');
+const { verifyToken } = require('../modules/auth/access-jwt');
 const usersRepository = require('../modules/users/repositories');
 const {
   assertUserIsActive,

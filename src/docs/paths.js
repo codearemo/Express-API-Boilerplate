@@ -475,6 +475,110 @@
 
 /**
  * @openapi
+ * /api/v1/auth/2fa/setup:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Start TOTP two-factor setup
+ *     description: |
+ *       Returns a TOTP secret and `otpauth://` URL for the authenticator app.
+ *       Call `POST /auth/2fa/confirm` with a valid code to enable 2FA.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Setup started
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data: { $ref: '#/components/schemas/TwoFactorSetupResponse' }
+ *                 message: { type: 'string' }
+ *       400:
+ *         description: Two-factor authentication is already enabled
+ *       401:
+ *         description: Authentication required
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/2fa/confirm:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Confirm and enable two-factor authentication
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ConfirmTwoFactorRequest'
+ *     responses:
+ *       200:
+ *         description: Two-factor authentication enabled
+ *       400:
+ *         description: Invalid or expired setup, or invalid authenticator code
+ *       401:
+ *         description: Authentication required
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/2fa/verify:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Complete login with a TOTP code
+ *     description: |
+ *       Used after `POST /auth/login` or `POST /auth/social` when the response
+ *       has `requiresTwoFactor: true`. Returns the same token pair as a normal login.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyTwoFactorLoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponseLogin'
+ *       400:
+ *         description: Invalid authenticator code
+ *       401:
+ *         description: Invalid or expired two-factor token
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/2fa/disable:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Disable two-factor authentication
+ *     description: |
+ *       Requires a valid TOTP code. Password is required when the account has a password.
+ *       Revokes all refresh tokens for the user.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/DisableTwoFactorRequest'
+ *     responses:
+ *       200:
+ *         description: Two-factor authentication disabled
+ *       400:
+ *         description: Not enabled, invalid code, or missing password
+ *       401:
+ *         description: Authentication required
+ */
+
+/**
+ * @openapi
  * /api/v1/uploads:
  *   post:
  *     tags: [Uploads]

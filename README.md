@@ -267,6 +267,10 @@ Interactive docs: [http://localhost:3003/api-docs](http://localhost:3003/api-doc
 | `POST` | `/api/v1/auth/logout` | No | Revoke a `refreshToken` |
 | `POST` | `/api/v1/auth/forgot-password` | No | Email a password reset OTP |
 | `POST` | `/api/v1/auth/reset-password` | No | Set new password with email + OTP |
+| `POST` | `/api/v1/auth/2fa/setup` | Bearer JWT | Start TOTP setup — returns `secret` + `otpauthUrl` |
+| `POST` | `/api/v1/auth/2fa/confirm` | Bearer JWT | Enable 2FA with a code from the authenticator app |
+| `POST` | `/api/v1/auth/2fa/verify` | No | Complete login after password/social when 2FA is enabled |
+| `POST` | `/api/v1/auth/2fa/disable` | Bearer JWT | Disable 2FA (TOTP code + password if the account has one) |
 | `POST` | `/api/v1/uploads` | Bearer JWT | Upload one or more files (`multipart/form-data`, field `files`) |
 | `GET` | `/api/v1/uploads/:fileId/download` | Bearer JWT | Download an active file (used when `UPLOAD_PUBLIC_ACCESS=false`) |
 | `DELETE` | `/api/v1/uploads/:fileId` | Bearer JWT | Soft-delete by `id` (recommended) or `name` from upload response |
@@ -337,17 +341,76 @@ Content-Type: application/json
 }
 ```
 
-Response includes a short-lived access JWT in `data.token` and a long-lived `data.refreshToken`:
+Response includes a short-lived access JWT in `data.token` and a long-lived `data.refreshToken` when 2FA is **not** enabled:
 
 ```json
 {
   "message": "Login successful",
   "data": {
+    "requiresTwoFactor": false,
     "user": { },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "refreshToken": "a1b2c3d4e5f678901234567890abcd..."
   }
 }
+```
+
+When 2FA **is** enabled, login and social login return a challenge instead of tokens:
+
+```json
+{
+  "message": "Two-factor authentication required",
+  "data": {
+    "requiresTwoFactor": true,
+    "twoFactorToken": "a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd1234"
+  }
+}
+```
+
+Complete sign-in with `POST /auth/2fa/verify` and a 6-digit code from the user's authenticator app.
+
+### Two-factor authentication (TOTP)
+
+Users can enable an authenticator app (Google Authenticator, Authy, 1Password, etc.) from an authenticated session:
+
+```http
+POST /api/v1/auth/2fa/setup
+Authorization: Bearer <token>
+```
+
+Scan the returned `otpauthUrl` (or enter `secret` manually), then confirm:
+
+```http
+POST /api/v1/auth/2fa/confirm
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{ "code": "123456" }
+```
+
+After 2FA is enabled, **password login** and **social login** require a second step — no JWT is issued until the TOTP code is verified:
+
+```http
+POST /api/v1/auth/2fa/verify
+Content-Type: application/json
+
+{
+  "twoFactorToken": "<from login or social response>",
+  "code": "123456"
+}
+```
+
+To disable 2FA (password required when the account has a password):
+
+```http
+POST /api/v1/auth/2fa/disable
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{ "code": "123456", "password": "Password123!" }
+```
+
+Disabling 2FA revokes all refresh tokens for that user.
 ```
 
 Send the access token on protected routes:
@@ -604,11 +667,12 @@ All `/api/v1` responses use a uniform envelope.
 ## Authentication
 
 ```
-1. POST /auth/login     →  { data: { user, token, refreshToken } }
-2. Store tokens         →  access token in memory; refresh token in httpOnly cookie or secure storage
-3. Protected requests   →  Authorization: Bearer <token>
-4. POST /auth/refresh   →  new token pair when access token expires (refresh token rotates)
-5. authenticate MW      →  sets req.user.id from JWT payload
+1. POST /auth/login     →  { data: { requiresTwoFactor, user?, token?, refreshToken?, twoFactorToken? } }
+2. POST /auth/2fa/verify (when requiresTwoFactor) → full token pair
+3. Store tokens         →  access token in memory; refresh token in httpOnly cookie or secure storage
+4. Protected requests   →  Authorization: Bearer <token>
+5. POST /auth/refresh   →  new token pair when access token expires (refresh token rotates)
+6. authenticate MW      →  sets req.user.id from JWT payload
 ```
 
 Access JWT payload contains only `{ sub: userId }` — no email or password in the token. Refresh tokens are opaque random strings (64-char hex) stored **hashed** (SHA-256) in MongoDB. Refresh uses single-use rotation: the old token is deleted before a new one is issued.

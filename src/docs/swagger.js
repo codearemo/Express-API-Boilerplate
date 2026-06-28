@@ -68,6 +68,10 @@ const options = {
               type: 'boolean',
               example: false,
             },
+            twoFactorEnabled: {
+              type: 'boolean',
+              example: false,
+            },
             bio: { type: 'string', nullable: true },
             status: {
               type: 'string',
@@ -243,6 +247,19 @@ const options = {
         LoginResponse: {
           type: 'object',
           properties: {
+            requiresTwoFactor: {
+              type: 'boolean',
+              description:
+                'When true, complete sign-in with POST /auth/2fa/verify using twoFactorToken and a TOTP code',
+              example: false,
+            },
+            twoFactorToken: {
+              type: 'string',
+              description:
+                'Present when requiresTwoFactor is true — single-use challenge token (64-char hex)',
+              example:
+                'a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd1234',
+            },
             user: { $ref: '#/components/schemas/User' },
             token: {
               type: 'string',
@@ -255,6 +272,60 @@ const options = {
               description: 'Long-lived refresh token for POST /auth/refresh',
               example:
                 'a1b2c3d4e5f678901234567890abcd1234567890abcd1234567890abcd12',
+            },
+          },
+        },
+        TwoFactorSetupResponse: {
+          type: 'object',
+          properties: {
+            secret: {
+              type: 'string',
+              description: 'Base32 TOTP secret for manual entry',
+            },
+            otpauthUrl: {
+              type: 'string',
+              description: 'otpauth:// URI for QR scanning',
+            },
+          },
+        },
+        ConfirmTwoFactorRequest: {
+          type: 'object',
+          required: ['code'],
+          properties: {
+            code: {
+              type: 'string',
+              pattern: '^\\d{6}$',
+              example: '123456',
+            },
+          },
+        },
+        VerifyTwoFactorLoginRequest: {
+          type: 'object',
+          required: ['twoFactorToken', 'code'],
+          properties: {
+            twoFactorToken: {
+              type: 'string',
+              pattern: '^[a-f0-9]{64}$',
+            },
+            code: {
+              type: 'string',
+              pattern: '^\\d{6}$',
+              example: '123456',
+            },
+          },
+        },
+        DisableTwoFactorRequest: {
+          type: 'object',
+          required: ['code'],
+          properties: {
+            code: {
+              type: 'string',
+              pattern: '^\\d{6}$',
+              example: '123456',
+            },
+            password: {
+              type: 'string',
+              description: 'Required when the account has a password',
             },
           },
         },

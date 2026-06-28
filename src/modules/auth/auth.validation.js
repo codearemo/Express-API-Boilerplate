@@ -89,6 +89,30 @@ const socialLoginSchema = z.object({
     .min(1, 'ID token is required'),
 });
 
+const totpCodeField = z
+  .string({ error: 'Authenticator code is required' })
+  .trim()
+  .regex(/^\d{6}$/, 'Authenticator code must be 6 digits');
+
+const twoFactorTokenField = z
+  .string({ error: 'Two-factor token is required' })
+  .trim()
+  .regex(/^[a-f0-9]{64}$/, 'Invalid two-factor token');
+
+const confirmTwoFactorSchema = z.object({
+  code: totpCodeField,
+});
+
+const verifyTwoFactorLoginSchema = z.object({
+  twoFactorToken: twoFactorTokenField,
+  code: totpCodeField,
+});
+
+const disableTwoFactorSchema = z.object({
+  code: totpCodeField,
+  password: z.string().trim().optional(),
+});
+
 function isEmail(value) {
   return z.email().safeParse(value).success;
 }
@@ -186,6 +210,36 @@ function validateSocialLogin(body) {
   return result.data;
 }
 
+function validateConfirmTwoFactor(body) {
+  const result = confirmTwoFactorSchema.safeParse(body);
+
+  if (!result.success) {
+    throw formatZodError(result.error);
+  }
+
+  return result.data;
+}
+
+function validateVerifyTwoFactorLogin(body) {
+  const result = verifyTwoFactorLoginSchema.safeParse(body);
+
+  if (!result.success) {
+    throw formatZodError(result.error);
+  }
+
+  return result.data;
+}
+
+function validateDisableTwoFactor(body) {
+  const result = disableTwoFactorSchema.safeParse(body);
+
+  if (!result.success) {
+    throw formatZodError(result.error);
+  }
+
+  return result.data;
+}
+
 module.exports = {
   validateRegister,
   validateLogin,
@@ -195,5 +249,8 @@ module.exports = {
   validateResendVerification,
   validateRefreshToken,
   validateSocialLogin,
+  validateConfirmTwoFactor,
+  validateVerifyTwoFactorLogin,
+  validateDisableTwoFactor,
   isEmail,
 };

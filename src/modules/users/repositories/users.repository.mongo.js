@@ -84,6 +84,34 @@ async function updateProfile(userId, fields) {
   return doc;
 }
 
+async function findByIdWithTwoFactorSecret(id) {
+  const doc = await UsersModel.findById(id).select('+twoFactorSecret').lean();
+  return doc;
+}
+
+async function findByIdWithPasswordAndTwoFactorSecret(id) {
+  const doc = await UsersModel.findById(id)
+    .select('+password +twoFactorSecret')
+    .lean();
+  return doc;
+}
+
+async function enableTwoFactor(userId, encryptedSecret) {
+  await UsersModel.findByIdAndUpdate(userId, {
+    twoFactorEnabled: true,
+    twoFactorSecret: encryptedSecret,
+    updatedAt: new Date(),
+  });
+}
+
+async function disableTwoFactor(userId) {
+  await UsersModel.findByIdAndUpdate(userId, {
+    twoFactorEnabled: false,
+    $unset: { twoFactorSecret: 1 },
+    updatedAt: new Date(),
+  });
+}
+
 module.exports = {
   create,
   findById,
@@ -97,4 +125,8 @@ module.exports = {
   findByAuthProvider,
   addAuthProvider,
   updateProfile,
+  findByIdWithTwoFactorSecret,
+  findByIdWithPasswordAndTwoFactorSecret,
+  enableTwoFactor,
+  disableTwoFactor,
 };
