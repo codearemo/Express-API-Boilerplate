@@ -114,7 +114,7 @@ const config = {
       cloudName: process.env.CLOUDINARY_CLOUD_NAME,
       apiKey: process.env.CLOUDINARY_API_KEY,
       apiSecret: process.env.CLOUDINARY_API_SECRET,
-      folder: process.env.CLOUDINARY_FOLDER || 'feed-app',
+      folder: process.env.CLOUDINARY_FOLDER || 'my-app',
     };
   },
   get rateLimit() {
@@ -221,7 +221,7 @@ const config = {
   },
   get mongo() {
     return {
-      uri: process.env.MONGO_URI || 'mongodb://localhost:27017/feed-app',
+      uri: process.env.MONGO_URI || 'mongodb://localhost:27017/my-app',
     };
   },
   get social() {
@@ -239,7 +239,7 @@ const config = {
       dialect: process.env.SQL_DIALECT || 'mysql',
       host: process.env.SQL_HOST || 'localhost',
       port: Number(process.env.SQL_PORT) || 3306,
-      database: process.env.SQL_DATABASE || 'feed_app',
+      database: process.env.SQL_DATABASE || 'my_app',
       user: process.env.SQL_USER || 'root',
       password: process.env.SQL_PASSWORD || '',
     };
